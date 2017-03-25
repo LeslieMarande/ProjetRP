@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 #2 5 1 2 5 2rows of 5 slots each, 1 slot unavailable, 2 pools and 5 servers.
 global r
 r=0
@@ -76,5 +78,38 @@ def extraireInfosServeurs(nomFichier,pourcentage):
             s.close()
             print("fin")   
 
+    """
+    Cree un fichier "Affectation.txt" qui contient la solution du probleme
+    - entree : tableau A contenant l'affectation pour chacun des serveurs m = 0, .., |M| - 1
+    sous la forme A[m] = [ar_m, as_m, ap_m], avec :
+        ar_m : numero de la rangee ou le serveur est localise
+        as_m : numero du premier slot de la rangee ou le serveur est affecte sur z_m slots consecutifs
+        ap_m : numero du pool ou le serveur est affecte
+    Rq : A[m] = [x] designe le fait que le serveur, m, n'a pas ete affecte
+    - sortie : aucune, la fonction creee le fichier affectation.txten interne
+    """
+    
+    # Ecriture dans le fichier
+    f = open("Affectation.txt", "w")
+    cpt = 0
+    for line in A:
+        if line[0] != 'x':
+            f.write("{0} {1} {2} \t Server {nb} placed in row {0} at slot {1} and assigned to pool {2}.\n".format(*line, nb = cpt))
+        else:
+            f.write("x \t \t Server {nb} not allocated.\n".format(nb = cpt))
+        cpt += 1
+    f.close
+
+###############################################################################
+# MAIN
+###############################################################################
 def main():
     extraireInfos("dc.in",10,"P")
+    
+    A = []
+    A.append([0, 1, 0])
+    A.append([1, 0, 1])
+    A.append([1, 3, 0])
+    A.append([0, 4, 1])
+    A.append(['x'])
+
