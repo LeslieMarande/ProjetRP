@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-#2 5 1 2 5 2rows of 5 slots each, 1 slot unavailable, 2 pools and 5 servers.
+#2 5 1 2 5 2 rows of 5 slots each, 1 slot unavailable, 2 pools and 5 servers.
 global r
 r=0
 
@@ -78,6 +78,7 @@ def extraireInfosServeurs(nomFichier,pourcentage):
             s.close()
             print("fin")   
 
+def genererFichierSolution(A):
     """
     Cree un fichier "Affectation.txt" qui contient la solution du probleme
     - entree : tableau A contenant l'affectation pour chacun des serveurs m = 0, .., |M| - 1
@@ -104,8 +105,9 @@ def extraireInfosServeurs(nomFichier,pourcentage):
 # MAIN
 ###############################################################################
 def main():
-    extraireInfos("dc.in",10,"P")
+    extraireInfos("dc.in",10,"R")
     
+    # Creation d'un tableau d'affectation A pour tester la fonction genererFichierSolution(A)
     A = []
     A.append([0, 1, 0])
     A.append([1, 0, 1])
@@ -113,3 +115,4 @@ def main():
     A.append([0, 4, 1])
     A.append(['x'])
 
+    genererFichierSolution(A)
