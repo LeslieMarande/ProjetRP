@@ -101,6 +101,71 @@ def genererFichierSolution(A):
         cpt += 1
     f.close
 
+def methodeGloutonne(fileName):
+    with open(fileName, 'r') as source:
+        # Enregistre les caracteristiques de l'instance dans la variables caracteristics
+        r, s, u, p, m = source.readline().split()
+        caracteristics = {'R': r, 'S': s, 'U': u, 'P': p, 'M': m}
+        unavailableSlots = []
+        i = 0
+        
+        
+        # Enregistre dans le dictionnaire unavailableSlots les slots indisponibles tel que :
+        # - cle = numero de la rangee
+        # - valeur = liste de numeros de slot qui sont indisponibles
+        
+        unavailableSlots = {str(i): [] for i in range(0, caracteristics['R'])}
+        while i < caracteristics['U']:
+            row, slot = source.readline().split()
+            unavailableSlots[str(row)].append(int(slot))
+            i += 1
+            
+        # Trie les liste de numero de slot pour chaque rangee
+        for k, v in unavailableSlots.items():
+            unavailableSlots[k] = value.sort()
+        
+        # Enregistre les serveurs dans une liste.
+        # Un element de la liste est un triplet : (identifiant du serveur, sa taille, sa capacite)
+        serverId = 0
+        servers = []
+        line = source.readline()
+        while line != "":
+            size, capacity = line.split()
+            serverId += 1
+            servers.append(serverId, int(size), int(capacity))
+            line = source.readline()
+            
+        # Trie par capacity decroissante
+        servers.sort(key = lambda tup : tup[2], reverse = True) 
+        source.close()
+    
+    # Debut de l'algorithme glouton pour determiner l'affectation    
+    affectation = {}
+    row = 0
+    # Pour chaque row, on attribut une position
+    positionsList = [0 for i in range(0, caracteristics['S'])]
+    # compteur
+    unavailableSlotsCountersList = [0 for i in range(0, caracteristics['S'])]
+    
+            
+def affecterServeurs(listeServeurs, rangees):
+    #Creer le dico
+    for s in listeServeurs:
+        for r in rangees:
+            solution = rangeeEtPos(capaciteS, listeObstacles)
+            if solution != None:
+                #Mettre à jour listeObstacles de cette rangee
+                #Remplir Affection
+                break
+            #Si je suis à la derniere rangee mettre 'x' dans affectation
+            
+
+def rangeeEtPos(capacite, listeObstacles):       
+            
+        
+            
+        
+    
 ###############################################################################
 # MAIN
 ###############################################################################
@@ -116,3 +181,4 @@ def main():
     A.append(['x'])
 
     genererFichierSolution(A)
+    
