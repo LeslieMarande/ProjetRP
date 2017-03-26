@@ -59,7 +59,9 @@ def genererFichierSolution(A):
         else:
             f.write("x \t \t Server {nb} not allocated.\n".format(nb = cpt))
         cpt += 1
-    f.close
+    f.close  
+
+
 
 def methodeGloutonne(fileName):
     with open(fileName, 'r') as source:
@@ -120,9 +122,15 @@ def affecterServeurs(listeServeurs, rangees):
             #Si je suis à la derniere rangee mettre 'x' dans affectation
             
 
-def rangeeEtPos(capacite, listeObstacles):       
-            
-        
+def rangeeEtPos(capacite, listeObstacles):
+    pos = 0
+    #Tant que jarrive pas à caser mon serveur et que j'ai un Obstacle
+            while(pos in listeObstacles):
+            pos = pos + 1
+        #comparer distance entre pos et prochain obstacle 
+        #return   
+    #Place entre ma position et le bord?
+    #retourner None
             
         
     
