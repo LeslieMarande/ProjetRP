@@ -1,82 +1,42 @@
 # -*- coding: utf-8 -*-
 
-#2 5 1 2 5 2 rows of 5 slots each, 1 slot unavailable, 2 pools and 5 servers.
-global r
-r=0
-
-global p
-p=0
-
-global se
-se=0
-
-def extraireInfos(nomFichier,pourcentage,param):
-    if param == "R":
-        extraireInfosRangees(nomFichier,pourcentage)
-    elif param == "P":
-        extraireInfosPools(nomFichier,pourcentage)
-    elif param == "S":
-        extraireInfosServeurs(nomFichier,pourcentage)
-    else :
-        print("Erreur de saisie")
-
-
-def extraireInfosRangees(nomFichier,pourcentage):
-    print("Dans Rangees")
-    global r
-    n=0
-    nbSlotUnavailable = 0
-    with open(nomFichier, "r") as s:
-        with open("infosRangees"+str(r)+".txt","w") as f:
-            r=r+1
-            premiereLigne = s.readline()
-            f.write(premiereLigne)
-            nbSlotUnavailable = premiereLigne.split()[2]
-
-            while(n<int(int(nbSlotUnavailable)*int(pourcentage)/100)):
-                n=n+1
-                f.write(s.readline())
-            f.close()
-            s.close()
-            print("fin")
+#2 5 1 2 5 : 2 rows of 5 slots each, 1 slot unavailable, 2 pools and 5 servers.
     
-def extraireInfosPools(nomFichier,pourcentage):
-    print("Dans pools")
-    global p
+def creeFichierInstancePourcentage(nomFichier, pourcentage):         
+    n = 0
+    cpt = 0
     with open(nomFichier, "r") as s:
-        with open("infosPool"+str(p)+".txt","w") as f:
-            p=p+1
-            premiereLigne = s.readline()
-            f.write(premiereLigne)
-            nbPools = int(int(premiereLigne.split()[3])*int(pourcentage)/100)
-            f.write(str(nbPools))
+        with open("temp.txt", "w") as f:
+            premiereLigne = s.readline().split()
+            nbRangees = int(int(premiereLigne[0])*int(pourcentage)/100)
+            premiereLigne[0] = int(nbRangees)
+            premiereLigne[3] = int(int(premiereLigne[3])*int(pourcentage)/100)
+            premiereLigne[4] = int(int(premiereLigne[4])*int(pourcentage)/100)
+            while(n<int(premiereLigne[2])):
+                n=n+1
+                ligne = s.readline()
+                ligne1 = ligne.split()
+                if(int(ligne1[0])<nbRangees):
+                    f.write(ligne)
+                    cpt = cpt+1
+                    
+            premiereLigne[2] = cpt
+            premiereLigneBis = map(str, premiereLigne)    
+            premiereLigneBis = ' '.join(premiereLigneBis) 
+            f.close()
+        
+        with open(str(nomFichier)+'_'+str(pourcentage)+".txt","w") as k:
+            k.write(premiereLigneBis+'\n')
+            with open("temp.txt", "r") as f:
+                k.write(f.read())
+                f.close()
+            n=0
+            while(n+1<premiereLigne[4]):
+                n=n+1
+                k.write(s.readline())
             
-            f.close()
-            s.close()
-            print("fin")
-       
-def extraireInfosServeurs(nomFichier,pourcentage):
-    global se
-    k = 0
-    nbServeurs = 0
-    print("Dans Serveurs")
-    with open(nomFichier, "r") as s:
-        with open("infosServeurs"+str(se)+".txt","w") as f:
-            se = se+1
-            premiereLigne = s.readline()
-            f.write(premiereLigne)
-            nbSlotUnavailable = premiereLigne.split()[2]
-            nbServeurs = premiereLigne.split()[-1]
-            while(k<int(nbSlotUnavailable)):
-                k=k+1
-                s.readline()
-            k = 0
-            while(k+1<int(nbServeurs)*int(pourcentage)/100): #k+1 je crois
-                k=k+1
-                f.write(s.readline())
-            f.close()
-            s.close()
-            print("fin")   
+            k.close()
+            s.close()   
 
 def genererFichierSolution(A):
     """
@@ -105,7 +65,7 @@ def genererFichierSolution(A):
 # MAIN
 ###############################################################################
 def main():
-    extraireInfos("dc.in",10,"R")
+    creeFichierInstancePourcentage("dc.in",10)
     
     # Creation d'un tableau d'affectation A pour tester la fonction genererFichierSolution(A)
     A = []
