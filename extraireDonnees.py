@@ -25,13 +25,13 @@ def creeFichierInstancePourcentage(nomFichier, pourcentage):
             premiereLigneBis = ' '.join(premiereLigneBis) 
             f.close()
         
-        with open(str(nomFichier)+'_'+str(pourcentage)+".txt","w") as k:
+        with open(str(nomFichier.split('.')[0])+'_'+str(pourcentage)+".txt","w") as k:
             k.write(premiereLigneBis+'\n')
             with open("temp.txt", "r") as f:
                 k.write(f.read())
                 f.close()
             n=0
-            while(n+1<premiereLigne[4]):
+            while(n<premiereLigne[4]):
                 n=n+1
                 k.write(s.readline())
             
@@ -53,38 +53,43 @@ def genererFichierSolution(A):
     # Ecriture dans le fichier
     f = open("Affectation.txt", "w")
     cpt = 0
-    for line in A:
-        if line[0] != 'x':
-            f.write("{0} {1} {2} \t Server {nb} placed in row {0} at slot {1} and assigned to pool {2}.\n".format(*line, nb = cpt))
+    for k in range(len(A)):
+        tup = A[str(k)]
+        print "AFFECTATION", tup
+        if tup[0] != 'x':
+            f.write("{0} {1} {2} \t Server {nb} placed in row {0} at slot {1} and assigned to pool {2}.\n".format(*tup, nb = cpt))
         else:
-            f.write("x \t \t Server {nb} not allocated.\n".format(nb = cpt))
+            f.write("x \t \t \t Server {nb} not allocated.\n".format(nb = cpt))
         cpt += 1
     f.close  
 
 
 
-def methodeGloutonne(fileName):
+def creeStructureDonnees(fileName):
     with open(fileName, 'r') as source:
-        # Enregistre les caracteristiques de l'instance dans la variables caracteristics
+        # Enregistre les caracteristiques de l'instance dans la variable caracteristics
         r, s, u, p, m = source.readline().split()
-        caracteristics = {'R': r, 'S': s, 'U': u, 'P': p, 'M': m}
-        unavailableSlots = []
+        caracteristics = {'R': int(r), 'S': int(s), 'U': int(u), 'P': int(p), 'M': int(m)}
+        unavailableSlots = {}
         i = 0
-        
         
         # Enregistre dans le dictionnaire unavailableSlots les slots indisponibles tel que :
         # - cle = numero de la rangee
         # - valeur = liste de numeros de slot qui sont indisponibles
         
-        unavailableSlots = {str(i): [] for i in range(0, caracteristics['R'])}
+        for i in range(0, caracteristics['R']):
+            unavailableSlots[str(i)] =  []
+        
+        i = 0
         while i < caracteristics['U']:
             row, slot = source.readline().split()
             unavailableSlots[str(row)].append(int(slot))
             i += 1
+        
             
         # Trie les liste de numero de slot pour chaque rangee
         for k, v in unavailableSlots.items():
-            unavailableSlots[k] = value.sort()
+            unavailableSlots[k].sort()
         
         # Enregistre les serveurs dans une liste.
         # Un element de la liste est un triplet : (identifiant du serveur, sa taille, sa capacite)
@@ -93,44 +98,81 @@ def methodeGloutonne(fileName):
         line = source.readline()
         while line != "":
             size, capacity = line.split()
-            serverId += 1
-            servers.append(serverId, int(size), int(capacity))
+            servers.append((serverId, int(size), int(capacity)))
             line = source.readline()
+            serverId += 1
             
         # Trie par capacity decroissante
         servers.sort(key = lambda tup : tup[2], reverse = True) 
         source.close()
     
-    # Debut de l'algorithme glouton pour determiner l'affectation    
-    affectation = {}
-    row = 0
-    # Pour chaque row, on attribut une position
-    positionsList = [0 for i in range(0, caracteristics['S'])]
-    # compteur
-    unavailableSlotsCountersList = [0 for i in range(0, caracteristics['S'])]
+    return caracteristics, unavailableSlots, servers
     
             
-def affecterServeurs(listeServeurs, rangees):
+def methodeGloutonne(fileName):
+    carac, dicoObstacles, listeServeurs = creeStructureDonnees(fileName)
+    affectation = {}
+    slotTrouve = False     
+    
     #Creer le dico
+    numPool = 0
     for s in listeServeurs:
-        for r in rangees:
-            solution = rangeeEtPos(capaciteS, listeObstacles)
-            if solution != None:
-                #Mettre à jour listeObstacles de cette rangee
-                #Remplir Affection
+        for r in range(carac["R"]):
+            numSlot = positionServeurSlot(dicoObstacles[str(r)], s[1], carac["S"])
+            if numSlot != None:
+                for i in range(s[1]):
+                    dicoObstacles[str(r)].append(numSlot + i)
+                dicoObstacles[str(r)].sort()
+                slotTrouve = True 
+                affectation[str(s[0])] = (r, numSlot, numPool ) 
                 break
-            #Si je suis à la derniere rangee mettre 'x' dans affectation
-            
+        if slotTrouve == False :
+            affectation[str(s[0])] = 'x' 
+        
+        slotTrouve = False
+        if numPool < carac["P"] - 1:
+            numPool += 1
+        else:
+            numPool = 0
 
-def rangeeEtPos(capacite, listeObstacles):
-    pos = 0
-    #Tant que jarrive pas à caser mon serveur et que j'ai un Obstacle
-            while(pos in listeObstacles):
-            pos = pos + 1
-        #comparer distance entre pos et prochain obstacle 
-        #return   
-    #Place entre ma position et le bord?
-    #retourner None
+    print "affectation finale"
+    print affectation
+    
+    genererFichierSolution(affectation)
+        
+        
+def positionServeurSlot(listeObstacles,capacite,tailleRangee):
+    """ retourne le num du premier slot """
+    curseurServeur = 0
+    curseurObst = 0
+    
+    if listeObstacles == []:
+        if capacite <= tailleRangee - curseurServeur:
+            return curseurServeur
+        else:
+            return None
+
+    while curseurServeur < tailleRangee:
+        while(curseurServeur in listeObstacles):
+            curseurServeur += 1
+        
+        while( curseurServeur > listeObstacles[curseurObst]):
+            curseurObst += 1
+            if curseurObst >= len(listeObstacles):
+                if curseurServeur >= tailleRangee:
+                    return None
+                elif capacite <= tailleRangee - curseurServeur:
+                    return curseurServeur
+                else :
+                    return None
+            
+        if capacite <= listeObstacles[curseurObst] - curseurServeur :
+            return curseurServeur
+            
+        curseurServeur = listeObstacles[curseurObst] + 1 
+    return None
+    
+        
             
         
     
@@ -138,15 +180,15 @@ def rangeeEtPos(capacite, listeObstacles):
 # MAIN
 ###############################################################################
 def main():
-    creeFichierInstancePourcentage("dc.in",10)
-    
-    # Creation d'un tableau d'affectation A pour tester la fonction genererFichierSolution(A)
-    A = []
-    A.append([0, 1, 0])
-    A.append([1, 0, 1])
-    A.append([1, 3, 0])
-    A.append([0, 4, 1])
-    A.append(['x'])
-
-    genererFichierSolution(A)
+    creeFichierInstancePourcentage("petit_dc.in",100)
+    methodeGloutonne("petit_dc_100.txt")
+#    # Creation d'un tableau d'affectation A pour tester la fonction genererFichierSolution(A)
+#    A = []
+#    A.append((0, 1, 0))
+#    A.append((1, 0, 1))
+#    A.append((1, 3, 0))
+#    A.append((0, 4, 1))
+#    A.append('x')
+#
+#    genererFichierSolution(A)
     
