@@ -1,8 +1,12 @@
 # -*- coding: utf-8 -*-
 
 #2 5 1 2 5 : 2 rows of 5 slots each, 1 slot unavailable, 2 pools and 5 servers.
+from copy import deepcopy
+def creeFichierInstancePourcentage(nomFichier, pourcentage):     
+    """
+    Creation d'un nouveau fichier ayant le pourcentage de rangées, slots invalides et serveurs
+    """
     
-def creeFichierInstancePourcentage(nomFichier, pourcentage):         
     n = 0
     cpt = 0
     with open(nomFichier, "r") as s:
@@ -71,6 +75,7 @@ def creeStructureDonnees(fileName):
         r, s, u, p, m = source.readline().split()
         caracteristics = {'R': int(r), 'S': int(s), 'U': int(u), 'P': int(p), 'M': int(m)}
         unavailableSlots = {}
+        dicoRangees = {}
         i = 0
         
         # Enregistre dans le dictionnaire unavailableSlots les slots indisponibles tel que :
@@ -79,11 +84,13 @@ def creeStructureDonnees(fileName):
         
         for i in range(0, caracteristics['R']):
             unavailableSlots[str(i)] =  []
+            dicoRangees[str(i)]= range(caracteristics['S'])
         
         i = 0
         while i < caracteristics['U']:
             row, slot = source.readline().split()
             unavailableSlots[str(row)].append(int(slot))
+            dicoRangees[str(row)][int(slot)] = 'X'
             i += 1
         
             
@@ -98,7 +105,7 @@ def creeStructureDonnees(fileName):
         line = source.readline()
         while line != "":
             size, capacity = line.split()
-            servers.append((serverId, int(size), int(capacity)))
+            servers.append([serverId, int(size), int(capacity)])
             line = source.readline()
             serverId += 1
             
@@ -106,34 +113,53 @@ def creeStructureDonnees(fileName):
         servers.sort(key = lambda tup : tup[2], reverse = True) 
         source.close()
     
-    return caracteristics, unavailableSlots, servers
+    return caracteristics, unavailableSlots, servers, dicoRangees
     
             
-def methodeGloutonne(fileName):
-    carac, dicoObstacles, listeServeurs = creeStructureDonnees(fileName)
+def methodeGloutonne1(fileName):
+    carac, dicoObstacles, listeServeurs, dicoRangees = creeStructureDonnees(fileName)
     affectation = {}
-    slotTrouve = False     
+    slotTrouve = False    
     
-    #Creer le dico
-    numPool = 0
+    
+    #Creer affectation
     for s in listeServeurs:
         for r in range(carac["R"]):
             numSlot = positionServeurSlot(dicoObstacles[str(r)], s[1], carac["S"])
             if numSlot != None:
                 for i in range(s[1]):
                     dicoObstacles[str(r)].append(numSlot + i)
+                    dicoRangees[str(r)][numSlot+i] = str(s[0])
                 dicoObstacles[str(r)].sort()
                 slotTrouve = True 
-                affectation[str(s[0])] = (r, numSlot, numPool ) 
+                affectation[str(s[0])] = [r, numSlot]  
                 break
         if slotTrouve == False :
             affectation[str(s[0])] = 'x' 
         
         slotTrouve = False
-        if numPool < carac["P"] - 1:
-            numPool += 1
-        else:
-            numPool = 0
+    print(affectation)
+    print(dicoRangees)
+    
+    #Affection des pools 
+    numPool = 0 
+    for s in dicoRangees['0']:
+        if not s == 'X':
+            valTemp = s
+            affectation[s].append(numPool)
+            numPool +=1
+            break
+        
+    for k in dicoRangees.keys() :
+        for v in dicoRangees[k]:
+            if not v == 'X':
+                if not v == valTemp:
+                    if numPool < carac["P"] - 1:
+                        numPool += 1
+                    else:
+                        numPool = 0
+                    affectation[v].append(numPool)
+                    valTemp = v
 
     print "affectation finale"
     print affectation
@@ -142,7 +168,7 @@ def methodeGloutonne(fileName):
         
         
 def positionServeurSlot(listeObstacles,capacite,tailleRangee):
-    """ retourne le num du premier slot """
+    """ retourne le num du premier slot où le serveur se positionne"""
     curseurServeur = 0
     curseurObst = 0
     
@@ -172,6 +198,49 @@ def positionServeurSlot(listeObstacles,capacite,tailleRangee):
         curseurServeur = listeObstacles[curseurObst] + 1 
     return None
     
+    
+def methodeGloutonne2(fileName):
+    carac, dicoObstacles, listeServeurs, dicoRangees = creeStructureDonnees(fileName)
+    listeServeurs = donnerPoolAuxServeurs(listeServeurs,carac)
+    dicoPoolsCapacite = {}
+    
+    for i in range(0, carac['P']):
+            dicoPoolsCapacite[str(i)] =  []
+            for j in range(0, carac['R']):
+                dicoPoolsCapacite[str(i)].append([j,0])
+    print(dicoPoolsCapacite)           
+    
+    for p in dicoPoolsCapacite:
+        p.sort(key = lambda tup : tup[1])
+    
+        
+    for s in listeServeurs :
+        for r in dicoPoolsCapacite :
+            
+    
+    
+    
+    
+    return None
+    
+def donnerPoolAuxServeurs(listeServeurs,carac):
+    "Chaque serveur appartient au Pool qui avait le moins de capacité à l'instant donné"
+    cpt = 0
+    capacitesPools = []
+    listeTemp = deepcopy(listeServeurs)
+    for a in range(carac['P']):
+        capacitesPools.append(0)
+    
+    while len(listeTemp) > 0 and cpt < len(listeServeurs):
+        capacitesPools[capacitesPools.index(min(capacitesPools))] += listeServeurs[cpt][2]
+        listeServeurs[cpt].append(capacitesPools.index(min(capacitesPools)))
+        cpt+=1
+        listeTemp.pop(0)
+    print("Fin Pool")
+    return listeServeurs
+        
+    
+    
         
             
         
@@ -181,7 +250,7 @@ def positionServeurSlot(listeObstacles,capacite,tailleRangee):
 ###############################################################################
 def main():
     creeFichierInstancePourcentage("petit_dc.in",100)
-    methodeGloutonne("petit_dc_100.txt")
+    methodeGloutonne2("petit_dc_100.txt")
 #    # Creation d'un tableau d'affectation A pour tester la fonction genererFichierSolution(A)
 #    A = []
 #    A.append((0, 1, 0))
