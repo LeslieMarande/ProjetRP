@@ -163,6 +163,9 @@ def methodeGloutonne1(fileName):
 
     print "affectation finale"
     print affectation
+
+    print "rangees"
+    print dicoRangees
     
     genererFichierSolution(affectation)
         
@@ -203,6 +206,8 @@ def methodeGloutonne2(fileName):
     carac, dicoObstacles, listeServeurs, dicoRangees = creeStructureDonnees(fileName)
     listeServeurs = donnerPoolAuxServeurs(listeServeurs,carac)
     dicoPoolsCapacite = {}
+    affectation = {}
+    slotTrouve = False   
     
     for i in range(0, carac['P']):
             dicoPoolsCapacite[str(i)] =  []
@@ -211,17 +216,39 @@ def methodeGloutonne2(fileName):
     print(dicoPoolsCapacite)           
     
     for p in dicoPoolsCapacite:
-        p.sort(key = lambda tup : tup[1])
+        dicoPoolsCapacite[p].sort(key = lambda tup : tup[1])
+
+    #Numero Pools : [numero Range, capacite dans la range de ce pool]  
+    print(dicoPoolsCapacite)
     
-        
     for s in listeServeurs :
-        for r in dicoPoolsCapacite :
+        for r in dicoPoolsCapacite[str(s[3])] :
+            numSlot = positionServeurSlot((dicoObstacles[str(r[0])]), s[1], carac["S"])
+            if numSlot != None:
+                for i in range(s[1]):
+                    dicoObstacles[str(r[0])].append(numSlot + i)
+                    dicoRangees[str(r[0])][numSlot+i] = str(s[0])
+                dicoObstacles[str(r[0])].sort()
+                slotTrouve = True 
+                affectation[str(s[0])] = [r[0], numSlot,s[3]]
+
+                r[1] +=  s[2]
+                dicoPoolsCapacite[str(s[3])].sort(key = lambda tup : tup[1])
+                break
             
+        if slotTrouve == False :
+            affectation[str(s[0])] = 'x' 
+        
+        slotTrouve = False
+
+    print "affectation finale"
+    print affectation
+
+    print "rangees"
+    print dicoRangees
     
-    
-    
-    
-    return None
+    genererFichierSolution(affectation)
+
     
 def donnerPoolAuxServeurs(listeServeurs,carac):
     "Chaque serveur appartient au Pool qui avait le moins de capacité à l'instant donné"
@@ -237,6 +264,7 @@ def donnerPoolAuxServeurs(listeServeurs,carac):
         cpt+=1
         listeTemp.pop(0)
     print("Fin Pool")
+    print(listeServeurs)
     return listeServeurs
         
     
