@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 #2 5 1 2 5 : 2 rows of 5 slots each, 1 slot unavailable, 2 pools and 5 servers.
+import random
 from copy import deepcopy
 def creeFichierInstancePourcentage(nomFichier, pourcentage):     
     """
@@ -40,7 +41,9 @@ def creeFichierInstancePourcentage(nomFichier, pourcentage):
                 k.write(s.readline())
             
             k.close()
-            s.close()   
+            s.close()
+    
+    return str(nomFichier.split('.')[0])+'_'+str(pourcentage)+".txt"
 
 def genererFichierSolution(A):
     """
@@ -65,7 +68,7 @@ def genererFichierSolution(A):
         else:
             f.write("x \t \t \t Server {nb} not allocated.\n".format(nb = cpt))
         cpt += 1
-    f.close  
+    f.close
 
 
 
@@ -84,13 +87,13 @@ def creeStructureDonnees(fileName):
         
         for i in range(0, caracteristics['R']):
             unavailableSlots[str(i)] =  []
-            dicoRangees[str(i)]= range(caracteristics['S'])
+            dicoRangees[str(i)]= ['' for i in range(caracteristics['S'])]
         
         i = 0
         while i < caracteristics['U']:
             row, slot = source.readline().split()
             unavailableSlots[str(row)].append(int(slot))
-            dicoRangees[str(row)][int(slot)] = 'X'
+            dicoRangees[str(row)][int(slot)] = 'x'
             i += 1
         
             
@@ -144,7 +147,7 @@ def methodeGloutonne1(fileName):
     #Affection des pools 
     numPool = 0 
     for s in dicoRangees['0']:
-        if not s == 'X':
+        if not s == 'x':
             valTemp = s
             affectation[s].append(numPool)
             numPool +=1
@@ -152,7 +155,7 @@ def methodeGloutonne1(fileName):
         
     for k in dicoRangees.keys() :
         for v in dicoRangees[k]:
-            if not v == 'X':
+            if not v == 'x':
                 if not v == valTemp:
                     if numPool < carac["P"] - 1:
                         numPool += 1
@@ -168,15 +171,17 @@ def methodeGloutonne1(fileName):
     print dicoRangees
     
     genererFichierSolution(affectation)
+    
+    return affectation, carac, listeServeurs, dicoRangees, dicoObstacles
         
         
-def positionServeurSlot(listeObstacles,capacite,tailleRangee):
+def positionServeurSlot(listeObstacles,taille,tailleRangee):
     """ retourne le num du premier slot où le serveur se positionne"""
     curseurServeur = 0
     curseurObst = 0
     
     if listeObstacles == []:
-        if capacite <= tailleRangee - curseurServeur:
+        if taille <= tailleRangee - curseurServeur:
             return curseurServeur
         else:
             return None
@@ -190,12 +195,12 @@ def positionServeurSlot(listeObstacles,capacite,tailleRangee):
             if curseurObst >= len(listeObstacles):
                 if curseurServeur >= tailleRangee:
                     return None
-                elif capacite <= tailleRangee - curseurServeur:
+                elif taille <= tailleRangee - curseurServeur:
                     return curseurServeur
                 else :
                     return None
             
-        if capacite <= listeObstacles[curseurObst] - curseurServeur :
+        if taille <= listeObstacles[curseurObst] - curseurServeur :
             return curseurServeur
             
         curseurServeur = listeObstacles[curseurObst] + 1 
@@ -213,10 +218,6 @@ def methodeGloutonne2(fileName):
             dicoPoolsCapacite[str(i)] =  []
             for j in range(0, carac['R']):
                 dicoPoolsCapacite[str(i)].append([j,0])
-    print(dicoPoolsCapacite)           
-    
-    for p in dicoPoolsCapacite:
-        dicoPoolsCapacite[p].sort(key = lambda tup : tup[1])
 
     #Numero Pools : [numero Range, capacite dans la range de ce pool]  
     print(dicoPoolsCapacite)
@@ -248,6 +249,8 @@ def methodeGloutonne2(fileName):
     print dicoRangees
     
     genererFichierSolution(affectation)
+    
+    return affectation, carac, listeServeurs, dicoRangees, dicoObstacles
 
     
 def donnerPoolAuxServeurs(listeServeurs,carac):
@@ -261,6 +264,7 @@ def donnerPoolAuxServeurs(listeServeurs,carac):
     while len(listeTemp) > 0 and cpt < len(listeServeurs):
         capacitesPools[capacitesPools.index(min(capacitesPools))] += listeServeurs[cpt][2]
         listeServeurs[cpt].append(capacitesPools.index(min(capacitesPools)))
+        
         cpt+=1
         listeTemp.pop(0)
     print("Fin Pool")
@@ -268,17 +272,135 @@ def donnerPoolAuxServeurs(listeServeurs,carac):
     return listeServeurs
         
     
+def descenteStochastique(fileName):
+    affectation, carac, listeServeurs, dicoRangees, dicoObstacles = methodeGloutonne2(fileName)
+    listeVoisins = []
+    nbAlea = random.random()
+    cpt = 0
+    maxIteration = 3
     
+    while cpt < maxIteration:
+        if nbAlea < 0.3:
+            listeVoisins = voisinageEnleverUnServeur(affectation)
+        elif 0.3 <= nbAlea and nbAlea < 0.6:
+            listeVoisins = voisinageServeurNonAffecte(affectation, listeServeurs, dicoObstacles)
+        else:
+            listeVoisins = voisinageChangementPool(affectation, carac)
         
+    """
+    if score(listeVoisins[k]) < score(affectation)
+        affectation <- listeVoisins[k]
+        EN PLUS MAJ DES VAR GLOBALES : dicoRangee
+    """
+    
+    
+    return None 
+
+def voisinageEnleverUnServeur(affectation):
+    """
+    Genere tous les voisins possibles a partir d'une affectation
+    en enlevant un serveur de cette affectation
+    - entree : l'affectation courante
+    - sortie : la liste des voisins de l'affectation courante
+    """
+    
+    listeVoisins = {}
+    
+    for serveurId in affectation:
+        if affectation[serveurId] != 'x':
+            tmp = deepcopy(affectation)
+            tmp[serveurId] = 'x'
+            listeVoisins[serveurId] = tmp
+        
+    return listeVoisins
+
+def voisinageServeurNonAffecte(affectation, listeServeurs, dicoObstacles):
+    """
+    Genere tous les voisins possibles a partir d'une affectation
+    en placant un serveur non encore affecte sur un emplacement libre
+    tire au sort et un pooltire au sort
+    - entree : l'affectation courante, la liste des caracteristiques des serveurs 
+                (taille, capacite)
+    - sortie : la liste des voisins de l'affectation courante
+    """
+        
+    listeVoisins = {}
+    
+    for serveurId in affectation:
+        if affectation[serveurId] == 'x':
             
-        
+            for serveur in listeServeurs:
+                if serveurId == str(serveur[0]):
+                    taille = serveur[1]
+                    break
+
+            # l_m, l'ensemble des slots (r,s) a partir duquel le serveur peut etre localises
+            l_m = []
+            
     
+
+def voisinageChangementPool(affectation, carac):
+    """
+    Genere tous les voisins possibles a partir d'une affectation
+    en changeant le pool d'un serveur déjà affecte a un autre pool tire au sort
+    - entree : l'affectation courante
+    - sortie : la liste des voisins de l'affectation courante
+    """
+    
+    listeVoisins = {}
+    
+    for serveurId in affectation:
+        if affectation[serveurId] != 'x':
+            tmp = deepcopy(affectation)
+            
+            nbPoolAlea = random.randint(0, carac['P'])
+            while nbPoolAlea == affectation[serveurId][2]:
+                nbPoolAlea = random.randint(0, carac['P'])
+            
+            tmp[serveurId][2] = nbPoolAlea
+            listeVoisins[serveurId].append(tmp)
+        
+    return listeVoisins
+  
+def genererListe_l_m(listeObstacles,taille,tailleRangee, rangeeId):
+    """ retourne le num du premier slot où le serveur se positionne"""
+    curseurServeur = 0
+    curseurObst = 0
+    liste_l_m = []
+    
+    if listeObstacles == []:
+        for i in range(tailleRangee - taille + 1):
+            liste_l_m.append((i, rangeeId))
+        return liste_l_m
+
+    while curseurServeur < tailleRangee:
+        while(curseurServeur in listeObstacles):
+            curseurServeur += 1
+        
+        while( curseurServeur > listeObstacles[curseurObst]):
+            curseurObst += 1
+            if curseurObst >= len(listeObstacles):
+                if curseurServeur >= tailleRangee:
+                    return liste_l_m
+                elif taille <= tailleRangee - curseurServeur:
+                    for i in range(curseurServeur, tailleRangee - taille + 1):
+                        liste_l_m.append((i, rangeeId))
+                    return liste_l_m
+                else :
+                    return liste_l_m
+            
+        if taille <= listeObstacles[curseurObst] - curseurServeur :
+            for i in range(curseurServeur, listeObstacles[curseurObst] - taille + 1):
+                liste_l_m.append((i, rangeeId))
+            
+        curseurServeur = listeObstacles[curseurObst] + 1 
+    return liste_l_m
+
 ###############################################################################
 # MAIN
 ###############################################################################
 def main():
-    creeFichierInstancePourcentage("petit_dc.in",100)
-    methodeGloutonne2("petit_dc_100.txt")
+#    methodeGloutonne2(creeFichierInstancePourcentage("dc.in",10))
 #    # Creation d'un tableau d'affectation A pour tester la fonction genererFichierSolution(A)
 #    A = []
 #    A.append((0, 1, 0))
