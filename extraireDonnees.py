@@ -179,8 +179,11 @@ def methodeGloutonne1(fileName):
     return affectation, carac, listeServeurs, dicoRangees, dicoObstacles
         
         
-def positionServeurSlot(listeObstacles,taille,tailleRangee):
-    """ retourne le num du premier slot ou le serveur se positionne"""
+
+
+def positionServeurSlot(listeObstacles,capacite,tailleRangee):
+    """ Pour une rangee, retourne le num du premier slot où le serveur se positionne"""
+
     curseurServeur = 0
     curseurObst = 0
     
@@ -224,10 +227,10 @@ def methodeGloutonne2(fileName):
             dicoPoolsCapacite[str(i)] =  []
             for j in range(0, carac['R']):
                 dicoPoolsCapacite[str(i)].append([j,0])
+    #Numero Pool : [numero Range, capacite dans la range de ce pool]              
+    print(dicoPoolsCapacite)           
 
-    #Numero Pools : [numero Range, capacite dans la range de ce pool]  
-#    print(dicoPoolsCapacite)
-    
+
     for s in listeServeurs :
         for r in dicoPoolsCapacite[str(s[3])] :
             numSlot = positionServeurSlot((dicoObstacles[str(r[0])]), s[1], carac["S"])
@@ -238,7 +241,7 @@ def methodeGloutonne2(fileName):
                 dicoObstacles[str(r[0])].sort()
                 slotTrouve = True 
                 affectation[str(s[0])] = [r[0], numSlot,s[3]]
-
+                
                 r[1] +=  s[2]
                 dicoPoolsCapacite[str(s[3])].sort(key = lambda tup : tup[1])
                 break
@@ -270,13 +273,14 @@ def donnerPoolAuxServeurs(listeServeurs,carac):
         capacitesPools.append(0)
     
     while len(listeTemp) > 0 and cpt < len(listeServeurs):
-        capacitesPools[capacitesPools.index(min(capacitesPools))] += listeServeurs[cpt][2]
         listeServeurs[cpt].append(capacitesPools.index(min(capacitesPools)))
-        
+        capacitesPools[capacitesPools.index(min(capacitesPools))] += listeServeurs[cpt][2]
         cpt+=1
         listeTemp.pop(0)
+
 #    print("Fin Pool")
 #    print(listeServeurs)
+
     return listeServeurs
         
 # Meta-heuristique : Q 2.1.
@@ -519,6 +523,7 @@ def calculScore(affectation, carac, listeServeurs):
 # MAIN
 ###############################################################################
 def main():
+
     nomFichier = "dc.in"
     for pourcentage in range(10,110,10):
         print "pourcentage", pourcentage
@@ -534,4 +539,5 @@ def main():
         print "Score : ", score
     
     
+
     
