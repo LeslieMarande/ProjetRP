@@ -289,7 +289,9 @@ def descenteStochastique(fileName):
     nouveauDicoObstacles = {}
     nbAlea = random.random()
     cpt = 0
-    maxIteration = 1000
+    maxIteration = 400
+    bestAffectation = affectation
+    bestDicoObstacles= dicoObstacles
     print("Score avant descente: ",calculScore(affectation, carac, listeServeurs)[0] )
     
     while cpt < maxIteration:
@@ -299,15 +301,31 @@ def descenteStochastique(fileName):
             nouvelleAffectation, nouveauDicoObstacles = voisinageServeurNonAffecte(affectation, listeServeurs, dicoObstacles, carac)
         else:
             nouvelleAffectation = voisinageChangementPool(affectation, carac)
-            nouveauDicoObstacles = dicoObstacles   
+            nouveauDicoObstacles = deepcopy(dicoObstacles)   
         nbAlea = random.random()
         cpt+=1
        # print("Nouveau score",calculScore(nouvelleAffectation, carac, listeServeurs)[0] )
         if calculScore(nouvelleAffectation, carac, listeServeurs)[0] >= calculScore(affectation, carac, listeServeurs)[0]:
         #    print("BETTER")
-            affectation = nouvelleAffectation
-            dicoObstacles = nouveauDicoObstacles
+            affectation = deepcopy(nouvelleAffectation)
+            dicoObstacles = deepcopy(nouveauDicoObstacles)
+        
+##        if cpt %4 == 0:
+##            if calculScore(nouvelleAffectation, carac, listeServeurs)[0] >= calculScore(bestAffectation, carac, listeServeurs)[0]:
+##                affectation = nouvelleAffectation
+##                dicoObstacles = nouveauDicoObstacles
+##                bestAffectation = deepcopy(affectation)
+##                bestDicoObstacles= deepcopy(dicoObstacles)
+##            else:
+##                affectation =bestAffectation 
+##                dicoObstacles=bestDicoObstacles
+##        else:
+##                affectation = nouvelleAffectation
+##                dicoObstacles = nouveauDicoObstacles
             
+
+
+        
     print("Score final: ", calculScore(affectation, carac, listeServeurs)[0])
     
     
