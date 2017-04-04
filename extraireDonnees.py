@@ -181,7 +181,7 @@ def methodeGloutonne1(fileName):
         
 
 
-def positionServeurSlot(listeObstacles,capacite,tailleRangee):
+def positionServeurSlot(listeObstacles,taille,tailleRangee):
     """ Pour une rangee, retourne le num du premier slot où le serveur se positionne"""
 
     curseurServeur = 0
@@ -227,9 +227,7 @@ def methodeGloutonne2(fileName):
             dicoPoolsCapacite[str(i)] =  []
             for j in range(0, carac['R']):
                 dicoPoolsCapacite[str(i)].append([j,0])
-    #Numero Pool : [numero Range, capacite dans la range de ce pool]              
-    print(dicoPoolsCapacite)           
-
+    #Numero Pool : [numero Range, capacite dans la range de ce pool]                      
 
     for s in listeServeurs :
         for r in dicoPoolsCapacite[str(s[3])] :
@@ -291,7 +289,8 @@ def descenteStochastique(fileName):
     nouveauDicoObstacles = {}
     nbAlea = random.random()
     cpt = 0
-    maxIteration = 3
+    maxIteration = 1000
+    print("Score avant descente: ",calculScore(affectation, carac, listeServeurs)[0] )
     
     while cpt < maxIteration:
         if nbAlea < 0.3:
@@ -300,12 +299,16 @@ def descenteStochastique(fileName):
             nouvelleAffectation, nouveauDicoObstacles = voisinageServeurNonAffecte(affectation, listeServeurs, dicoObstacles, carac)
         else:
             nouvelleAffectation = voisinageChangementPool(affectation, carac)
-        
-    """
-    if score(listeVoisins[k]) < score(affectation)
-        affectation <- listeVoisins[k]
-        EN PLUS MAJ DES VAR GLOBALES : dicoRangee
-    """
+            nouveauDicoObstacles = dicoObstacles   
+        nbAlea = random.random()
+        cpt+=1
+       # print("Nouveau score",calculScore(nouvelleAffectation, carac, listeServeurs)[0] )
+        if calculScore(nouvelleAffectation, carac, listeServeurs)[0] >= calculScore(affectation, carac, listeServeurs)[0]:
+        #    print("BETTER")
+            affectation = nouvelleAffectation
+            dicoObstacles = nouveauDicoObstacles
+            
+    print("Score final: ", calculScore(affectation, carac, listeServeurs)[0])
     
     
     return None 
@@ -319,7 +322,7 @@ def voisinageEnleverUnServeur(affectation, listeServeurs, dicoObstacles):
                 (id, taille, capacite), les obstacles
     - sortie : la nouvelle affectation, le nouveau dico des obstacles
     """
-    
+    #print("Choix : VoisinageEnleverUnServeur")
     listeServeursAffectes = []
     
     for serveurId in affectation:
@@ -337,11 +340,24 @@ def voisinageEnleverUnServeur(affectation, listeServeurs, dicoObstacles):
         if serveurSelectionne == str(serveur[0]):
             taille = serveur[1]
             break
+        
+    #print("serveur, taille")    
+    #print(serveurSelectionne,taille)
     
     for i in range(taille):
-        nouveauDicoObstacles[serveurSelectionne].remove(slot + i)
+        nouveauDicoObstacles[str(affectation[serveurSelectionne][0])].remove(slot + i)
         
     nouvelleAffectation[serveurSelectionne] = 'x'
+    
+##    print("Ancienne affectation")
+##    print(affectation)
+##    print("Nouvelle affectation")
+##    print(nouvelleAffectation)
+##
+##    print("Ancien dico")
+##    print(dicoObstacles)
+##    print("Nouveau dico")
+##    print(nouveauDicoObstacles)
     
     return nouvelleAffectation, nouveauDicoObstacles
     
@@ -354,7 +370,7 @@ def voisinageChangementPool(affectation, carac):
     - entree : l'affectation courante, les caracteristiques de l'instance
     - sortie : la nouvelle affectation possible
     """
-    
+    #print("Choix : voisinageChangementPool")
     listeServeursAffectes = []
     
     for serveurId in affectation:
@@ -362,14 +378,21 @@ def voisinageChangementPool(affectation, carac):
             listeServeursAffectes.append(serveurId)
             
     serveurSelectionne = random.choice(listeServeursAffectes)
+    #print("serveur,pool")
+    #print(serveurSelectionne,affectation[serveurSelectionne][2])
     
-    numPoolAlea = random.randint(0, carac['P'])
+    numPoolAlea = random.randint(0, carac['P']-1)
     while numPoolAlea == affectation[serveurSelectionne][2]:
-        numPoolAlea = random.randint(0, carac['P'])
+        numPoolAlea = random.randint(0, carac['P']-1)
     
     nouvelleAffectation = deepcopy(affectation)
     
     nouvelleAffectation[serveurSelectionne][2] = numPoolAlea
+
+##    print("Ancienne affectation")
+##    print(affectation)
+##    print("Nouvelle affectation")
+##    print(nouvelleAffectation)
             
     return nouvelleAffectation
 
@@ -384,14 +407,24 @@ def voisinageServeurNonAffecte(affectation, listeServeurs, dicoObstacles, carac)
                 de l'instance
     - sortie : la nouvelle affectation possible et le dico des obstacles possibles
     """
-        
+    #print("Choix : voisinageServeurNonAffecte")  
     listeServeursNonAffectes = []
     
     for serveurId in affectation:
         if affectation[serveurId] == 'x':
             listeServeursNonAffectes.append(serveurId)
+
+##    print("Serveurs non affectes")
+##    print(listeServeursNonAffectes)
+    
+    if len(listeServeursNonAffectes) == 0:
+        #print("Tous les serveurs sont affectes")
+        return affectation, dicoObstacles
     
     serveurSelectionne = random.choice(listeServeursNonAffectes)
+
+##    print("serveur choisi")
+##    print(serveurSelectionne)
     
     for serveur in listeServeurs:
         if serveurSelectionne == str(serveur[0]):
@@ -401,21 +434,44 @@ def voisinageServeurNonAffecte(affectation, listeServeurs, dicoObstacles, carac)
     # l_m, l'ensemble des slots (r,s) a partir duquel le serveur peut etre localises
     l_m = []
     for i in range(carac["R"]):
-        l_m.append(genererListe_l_m(dicoObstacles[str(i)], taille, carac["S"], i))
+        a = genererListe_l_m(dicoObstacles[str(i)], taille, carac["S"], i)
+        if not len(a) == 0: 
+            l_m += a
+
+    #print("Slots Possibles")
+    #print(l_m)
+
+    if len(l_m) == 0:
+        #print("aucun endroit dispo")
+        return affectation, dicoObstacles
     
-    nouvellePosition = random.choice(l_m)
+    nouvellePosition = random.choice(l_m)    
     nouveauPool = random.choice(range(carac["P"]))
+    
+##    print("Slots choisi")
+##    print(nouvellePosition)
     
     nouvelleAffectation = deepcopy(affectation)
     
     nouvelleAffectation[serveurSelectionne] = [nouvellePosition[0], nouvellePosition[1], nouveauPool]
-    
+
     nouveauDicoObstacles = deepcopy(dicoObstacles)
     
     for i in range(taille):
         nouveauDicoObstacles[str(nouvellePosition[0])].append(nouvellePosition[1] + i)
         
     nouveauDicoObstacles[str(nouvellePosition[0])].sort()
+
+##    print("Ancienne affectation")
+##    print(affectation)
+##    print("Nouvelle affectation")
+##    print(nouvelleAffectation)
+##
+##    print("Ancien dico")
+##    print(dicoObstacles)
+##    print("Nouveau dico")
+##    print(nouveauDicoObstacles)
+    
     
     return nouvelleAffectation, nouveauDicoObstacles
  
@@ -517,14 +573,11 @@ def calculScore(affectation, carac, listeServeurs):
             numPool = p
     
     return score, idRangee, numPool
-            
 
-###############################################################################
-# MAIN
-###############################################################################
-def main():
-
-    nomFichier = "dc.in"
+def test():
+    """
+    Test performance methode 1 et 2
+    """
     for pourcentage in range(10,110,10):
         print "pourcentage", pourcentage
         print "methode gloutonne 1"
@@ -538,6 +591,18 @@ def main():
         score, idRangee, numPool = calculScore(affectation, carac, listeServeurs)
         print "Score : ", score
     
-    
+            
+
+###############################################################################
+# MAIN
+###############################################################################
+def main():
+    nomFichier = "dc.in"
+    for pourcentage in range(10,110,10):
+        print("pourcentage : ", pourcentage)
+        descenteStochastique(creeFichierInstancePourcentage(nomFichier,pourcentage))
+
+
+
 
     
