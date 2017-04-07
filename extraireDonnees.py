@@ -3,6 +3,7 @@
 #2 5 1 2 5 : 2 rows of 5 slots each, 1 slot unavailable, 2 pools and 5 servers.
 
 import random
+import math
 from copy import deepcopy
 
 # Instances : Q 0.2.
@@ -290,8 +291,7 @@ def descenteStochastique(fileName):
     nbAlea = random.random()
     cpt = 0
     maxIteration = 400
-    bestAffectation = affectation
-    bestDicoObstacles= dicoObstacles
+
     print("Score avant descente: ",calculScore(affectation, carac, listeServeurs)[0] )
     
     while cpt < maxIteration:
@@ -592,12 +592,90 @@ def calculScore(affectation, carac, listeServeurs):
     
     return score, idRangee, numPool
 
-def test():
+def recuitSimule(fileName):
+    affectation, carac, listeServeurs, dicoRangees, dicoObstacles = methodeGloutonne2(fileName)
+    temperature = 400 #Il faut jouer ici
+    cpt = 0
+    nouveauDicoObstacles = dicoObstacles
+    RX = affectation
+    X = affectation
+    print("Score avant descente: ",calculScore(affectation, carac, listeServeurs)[0] )
+    
+    while(temperature > 0 ):         
+        
+        Y, nouveauDicoObstacles = unVoisinAffectation(X,carac,listeServeurs,dicoObstacles)
+        scoreY = calculScore(Y,carac,listeServeurs)[0]
+        scoreRX = calculScore(RX,carac,listeServeurs)[0]
+        scoreX = calculScore(X,carac,listeServeurs)[0]
+       # print("ScoreY, ScoreX, ScoreRX")
+        #print( scoreY, scoreX, scoreRX)
+        
+        if  scoreY > scoreRX :
+            RX = deepcopy(Y)
+            dicoObstacles = deepcopy(nouveauDicoObstacles)
+        if scoreY > scoreX :
+            X = deepcopy(Y)
+            dicoObstacles = deepcopy(nouveauDicoObstacles)
+        else: 
+            RND = random.randint(0,10) #Il faut jouer ici
+            if( RND <= math.exp(-( (scoreY - scoreX) / temperature) ) ):
+                #print("Hasard")
+                X = deepcopy(Y)
+                dicoObstacles = deepcopy(nouveauDicoObstacles)
+        
+        #if cpt%10 == 0:
+        #    temperature -= 1
+        #cpt+=1
+       
+        temperature -= 1
+            
+    print("Score apres descente: ",calculScore(RX, carac, listeServeurs)[0] )
+    
+
+def unVoisinAffectation(affectation, carac, listeServeurs, dicoObstacles):
+    
+    nouvelleAffectation = {}
+    nouveauDicoObstacles = {}
+    nbAlea = random.random()
+
+    
+    if nbAlea < 0.2:
+       # print"1"
+        nouvelleAffectation, nouveauDicoObstacles = voisinageEnleverUnServeur(affectation, listeServeurs, dicoObstacles)
+    elif 0.2 <= nbAlea and nbAlea < 0.4:
+       # print"2"
+        nouvelleAffectation, nouveauDicoObstacles = voisinageServeurNonAffecte(affectation, listeServeurs, dicoObstacles, carac)
+    else:
+        #print"3"
+        nouvelleAffectation = voisinageChangementPool(affectation, carac)
+        nouveauDicoObstacles = deepcopy(dicoObstacles)             
+            
+    return nouvelleAffectation, nouveauDicoObstacles
+
+###############################################################################
+# MAIN
+###############################################################################
+def main():
+    nomFichier = "dc.in"
+    #pourcentage = 30
+    for pourcentage in range(10,110,10):
+        print("pourcentage : ", pourcentage)
+        recuitSimule(creeFichierInstancePourcentage(nomFichier,pourcentage))
+        
+        
+        
+###############################################################################
+# Tests
+###############################################################################             
+def testAllPourcentage():
     """
     Test performance methode 1 et 2
     """
+    nomFichier = "dc.in"
     for pourcentage in range(10,110,10):
+        print("--------")
         print "pourcentage", pourcentage
+        print("--------")
         print "methode gloutonne 1"
         affectation, carac, listeServeurs, dicoRangees, dicoObstacles = methodeGloutonne1(creeFichierInstancePourcentage(nomFichier,pourcentage))
         score, idRangee, numPool = calculScore(affectation, carac, listeServeurs)
@@ -608,19 +686,13 @@ def test():
         affectation, carac, listeServeurs, dicoRangees, dicoObstacles = methodeGloutonne2(creeFichierInstancePourcentage(nomFichier,pourcentage))
         score, idRangee, numPool = calculScore(affectation, carac, listeServeurs)
         print "Score : ", score
-    
-            
 
-###############################################################################
-# MAIN
-###############################################################################
-def main():
+def testStochastique():
     nomFichier = "dc.in"
+    #pourcentage = 60
     for pourcentage in range(10,110,10):
         print("pourcentage : ", pourcentage)
         descenteStochastique(creeFichierInstancePourcentage(nomFichier,pourcentage))
-
-
 
 
     
