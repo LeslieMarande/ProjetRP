@@ -11,5 +11,17 @@ import extraireDonnees
 """ Variables """
 # r : id rangee
 
-def blabla():
+
+
+
+m = Model("mogplex")
+m.setParam( 'OutputFlag', False) #Desactive  le mode verbeux
+m.setParam('TimeLimit', 2*60) #Limite de temps pour la resolution 
+
+def creerR():
+
     return None
+
+def main():
+    nomFichier = "petit_dc.in"
+    creeFichierInstancePourcentage(nomFichier,100) #petit_dc_100.txt
