@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
+import gurobipy as g
 import extraireDonnees
-from gurobipy import *
 
 """ Contraintes """
 #1 Chaque slot contient au plus un serveur
@@ -12,22 +12,26 @@ from gurobipy import *
 """ Variables """
 # r : id rangee
 
-
-
-
-m = Model("RP-OptimizeDataCenter")
-m.setParam( 'OutputFlag', False) #Desactive  le mode verbeux
-m.setParam('TimeLimit', 2*60) #Limite de temps pour la resolution 
+model = g.Model("RP-OptimizeDataCenter")
+model.setParam( 'OutputFlag', False) #Desactive  le mode verbeux
+model.setParam('TimeLimit', 2*60) #Limite de temps pour la resolution 
 
 def creerVariables(fileName):
     """
+    Creer le ictionnaire :
+    z_mrsi["id du serveur"]["num rangee"]["num slot"]["num pool"]
     """
     z_mrsi = {}
-    carac, dicoObstacles, listeServeurs, dicoRangees = extraireDonnees.creeStructureDonnees(nomFichierInstance)
+    carac, dicoObstacles, listeServeurs, dicoRangees = extraireDonnees.creeStructureDonnees(fileName)
     
     dicoServeurCarac = {}
     for serveur in listeServeurs:
         dicoServeurCarac[str(serveur[0])] = [serveur[1], serveur[2]]
+        
+    k_rs = {}
+    for r in range(carac['R']):
+        for s in range(carac['S']):
+            k_rs[(r,s)] = []
     
     for m in range(carac['M']):
         
@@ -41,34 +45,24 @@ def creerVariables(fileName):
             
             for couple in l_m:
                 
+                k_rs[couple].append(m)
+                
                 z_mrsi[str(m)][str(r)][str(couple[1])] = {}
                 
                 for i in range(carac['P']):
                     print "var = z_mrsi {0} {1} {2} {3}".format(m, r, couple[1], i)
-                    z_mrsi[str(m)][str(r)][str(couple[1])][str(i)] = m.addVar(vtype = GRB.BINARY, lb=0, name="z_mrsi {0} {1} {2} {3}" .format(m, r, couple[1], i))
+                    z_mrsi[str(m)][str(r)][str(couple[1])][str(i)] = model.addVar(vtype = g.GRB.BINARY, lb=0, name="z_mrsi {0} {1} {2} {3}" .format(m, r, couple[1], i))
     
+    model.update()    
+    return z_mrsi, dicoServeurCarac, k_rs
+
+def contraintes(z_mrsi, dicoServeurCarac, k_rs):
+    """
+    contrainte 1 : au plus un serveur par slot
+    """
+    for key, value in k_rs.iteritems():
+        somme = 0
     
-    z_mrsi["id du serveur"]["num rangee"]["num slot"]["num pool"]
-    
-    return z_mrsi
-    
-#    def creerX(XNbCase,ori,init,nbTours,nom):
-#    "Creation des variables X ijk  "
-#    casesX ={}
-#    for i in range (XNbCase):  
-#        variables = {}
-#        if ori == False:
-#            case = init+i
-#        else:
-#            case = init+i*g.getColonne()
-#        for j in range(nbTours+1):
-#            #print("var = x %s %d %d" %(nom,(case),(j)))
-#            variables[j] = m.addVar(vtype=GRB.BINARY, lb=0, name="x %s %d %d" % (nom,(case),(j)) ) #VCT
-#                
-#        casesX[case] = variables    
-#    x[nom] = casesX
-#
-#    return None
 
 def main():
     nomFichier = "petit_dc.in"
