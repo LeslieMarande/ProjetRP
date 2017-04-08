@@ -111,7 +111,7 @@ def creeStructureDonnees(fileName):
         # Enregistre les serveurs dans une liste.
         # Un element de la liste est un triplet : (identifiant du serveur, sa taille, sa capacite)
         serverId = 0
-        listeServeurs = 
+        listeServeurs = []
         line = source.readline()
         while line != "":
             size, capacity = line.split()
