@@ -111,7 +111,7 @@ def creeStructureDonnees(fileName):
         # Enregistre les serveurs dans une liste.
         # Un element de la liste est un triplet : (identifiant du serveur, sa taille, sa capacite)
         serverId = 0
-        listeServeurs = []
+        listeServeurs = 
         line = source.readline()
         while line != "":
             size, capacity = line.split()
@@ -682,11 +682,11 @@ def unVoisinAffectation2(affectation, carac, listeServeurs, dicoObstacles):
 ###############################################################################
 def main():
     nomFichier = "dc.in"
-    #pourcentage = 30
-    #recuitSimule(creeFichierInstancePourcentage(nomFichier,pourcentage))
-    for pourcentage in range(10,110,10):
-        print("pourcentage : ", pourcentage)
-        recuitSimule(creeFichierInstancePourcentage(nomFichier,pourcentage))
+    pourcentage = 30
+    recuitSimule(creeFichierInstancePourcentage(nomFichier,pourcentage))
+##    for pourcentage in range(10,110,10):
+##        print("pourcentage : ", pourcentage)
+##        recuitSimule(creeFichierInstancePourcentage(nomFichier,pourcentage))
         
         
         

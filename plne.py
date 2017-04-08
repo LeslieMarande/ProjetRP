@@ -20,6 +20,7 @@ def creerVariables(fileName):
     """
     Creer le ictionnaire :
     z_mrsi["id du serveur"]["num rangee"]["num slot"]["num pool"]
+    k_rs[(idRangee,idSlot)]=[idServeur1,Idserveur2,...]
     """
     z_mrsi = {}
     carac, dicoObstacles, listeServeurs, dicoRangees = extraireDonnees.creeStructureDonnees(fileName)
@@ -53,20 +54,31 @@ def creerVariables(fileName):
                     print "var = z_mrsi {0} {1} {2} {3}".format(m, r, couple[1], i)
                     z_mrsi[str(m)][str(r)][str(couple[1])][str(i)] = model.addVar(vtype = g.GRB.BINARY, lb=0, name="z_mrsi {0} {1} {2} {3}" .format(m, r, couple[1], i))
     
-    model.update()    
+    model.update()
+
     return z_mrsi, dicoServeurCarac, k_rs
 
 def contraintes(z_mrsi, dicoServeurCarac, k_rs):
     """
-    contrainte 1 : au plus un serveur par slot
+    contrainte 1 : un serveur par slot (  un marqueur max par slot + pas de chevauchement de serveurs)
     """
     for key, value in k_rs.iteritems():
         somme = 0
+        if not len(value) == 0:
+            for serveur in value:
+                tailleServeur = dicoServeurCarac[str(serveur)][0]
+                for i in range(0,tailleServeur):
+                    for a,b in z_mrsi[str(serveur)][str(key[0])][str(key[1]+i)].iteritems():
+                        somme += b
+            print( somme +" <=  1 ") 
+            m.addConstr(somme <= 1, "Contrainte 1 : un marqueur max par slot %d %d" % (r, s))
+ 
+        
     
 
 def main():
     nomFichier = "petit_dc.in"
     nomFichierInstance = extraireDonnees.creeFichierInstancePourcentage(nomFichier,100) #petit_dc_100.txt
-    z = creerVariables(nomFichierInstance)
+    z,dicoServeurCarac,k_rs = creerVariables(nomFichierInstance)
     print z
     
