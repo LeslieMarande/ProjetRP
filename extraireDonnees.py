@@ -496,7 +496,7 @@ def voisinageServeurNonAffecte(affectation, listeServeurs, dicoObstacles, carac)
 
 def genererListe_l_m(listeObstacles,taille,tailleRangee, rangeeId):
     """
-    retourne la liste de slots ou le serveur peut se positionner sur ne rangee specifique
+    retourne la liste de slots ou le serveur peut se positionner sur une rangee specifique
     - entrees : la liste d'obstacle de la rangee, la taille du serveur,
                 la taille de la rangee et l'ID de la rangee
     - sortie : liste de couples (numero de la rangee, numero de slot)
@@ -603,7 +603,7 @@ def recuitSimule(fileName):
     
     while(temperature > 0 ):         
         
-        Y, nouveauDicoObstacles = unVoisinAffectation(X,carac,listeServeurs,dicoObstacles)
+        Y, nouveauDicoObstacles = unVoisinAffectation2(X,carac,listeServeurs,dicoObstacles)
         scoreY = calculScore(Y,carac,listeServeurs)[0]
         scoreRX = calculScore(RX,carac,listeServeurs)[0]
         scoreX = calculScore(X,carac,listeServeurs)[0]
@@ -617,9 +617,9 @@ def recuitSimule(fileName):
             X = deepcopy(Y)
             dicoObstacles = deepcopy(nouveauDicoObstacles)
         else: 
-            RND = random.randint(0,10) #Il faut jouer ici
-            if( RND <= math.exp(-( (scoreY - scoreX) / temperature) ) ):
-                #print("Hasard")
+            RND = random.random() #Il faut jouer ici
+            if( RND <= math.exp( (scoreY - scoreX) / temperature) ):
+               # print("Hasard",RND,math.exp( (scoreY - scoreX) / temperature) )
                 X = deepcopy(Y)
                 dicoObstacles = deepcopy(nouveauDicoObstacles)
         
@@ -637,7 +637,6 @@ def unVoisinAffectation(affectation, carac, listeServeurs, dicoObstacles):
     nouvelleAffectation = {}
     nouveauDicoObstacles = {}
     nbAlea = random.random()
-
     
     if nbAlea < 0.2:
        # print"1"
@@ -652,12 +651,39 @@ def unVoisinAffectation(affectation, carac, listeServeurs, dicoObstacles):
             
     return nouvelleAffectation, nouveauDicoObstacles
 
+
+def unVoisinAffectation2(affectation, carac, listeServeurs, dicoObstacles):
+    nouvelleAffectation = {}
+    nouveauDicoObstacles = {}
+    nbAlea = random.random()
+
+    if nbAlea < 0.33:
+       # print"1"
+        nouvelleAffectation, nouveauDicoObstacles = voisinageEnleverUnServeur(affectation, listeServeurs, dicoObstacles)
+        nouvelleAffectation, nouveauDicoObstacles = voisinageServeurNonAffecte(nouvelleAffectation, listeServeurs, nouveauDicoObstacles, carac)
+        
+    elif 0.33 <= nbAlea and nbAlea < 0.66:
+       # print"2"
+        nouvelleAffectation, nouveauDicoObstacles = voisinageServeurNonAffecte(affectation, listeServeurs, dicoObstacles, carac)
+        
+    else:
+        #print"3"
+        nouvelleAffectation = voisinageChangementPool(affectation, carac)
+        nouvelleAffectation = voisinageChangementPool(nouvelleAffectation, carac)
+        nouveauDicoObstacles = deepcopy(dicoObstacles)             
+            
+    return nouvelleAffectation, nouveauDicoObstacles
+    
+
+
+
 ###############################################################################
 # MAIN
 ###############################################################################
 def main():
     nomFichier = "dc.in"
     #pourcentage = 30
+    #recuitSimule(creeFichierInstancePourcentage(nomFichier,pourcentage))
     for pourcentage in range(10,110,10):
         print("pourcentage : ", pourcentage)
         recuitSimule(creeFichierInstancePourcentage(nomFichier,pourcentage))
