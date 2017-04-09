@@ -2,13 +2,6 @@
 import gurobipy as g
 import extraireDonnees
 
-""" Contraintes """
-#1 Chaque slot contient au plus un serveur
-#2 Aucun serveur sur slot indispo
-#3 Un serveur a autant de slot que sa taille et ils sont consecutifs ou pas affecte (meme rangee et pas depasser taille)
-#4 Un serveur affecte apparait au plus une fois
-#5 Un serveur affecte appartient a exactement un pool
-
 """ Variables """
 # r : id rangee
 
@@ -18,13 +11,15 @@ model.setParam('TimeLimit', 2*60) #Limite de temps pour la resolution
 
 def creerVariables(fileName):
     """
-    Creer le ictionnaire :
+    Creer le dictionnaire :
     z_mrsi["id du serveur"]["num rangee"]["num slot"]["num pool"]
     k_rs[(idRangee,idSlot)]=[idServeur1,Idserveur2,...]
     """
     z_mrsi = {}
     carac, dicoObstacles, listeServeurs, dicoRangees = extraireDonnees.creeStructureDonnees(fileName)
     
+    
+    # dicoServeurCarac["id du serveur"] = [taille du serveur, capacite du serveur]
     dicoServeurCarac = {}
     for serveur in listeServeurs:
         dicoServeurCarac[str(serveur[0])] = [serveur[1], serveur[2]]
@@ -58,24 +53,42 @@ def creerVariables(fileName):
     return z_mrsi, dicoServeurCarac, k_rs
 
 def contraintes(z_mrsi, dicoServeurCarac, k_rs):
+
+    """ Contraintes """
+#1 Chaque slot contient au plus un serveur
+#2 Aucun serveur sur slot indispo
+#3 Un serveur a autant de slot que sa taille et ils sont consecutifs ou pas affecte (meme rangee et pas depasser taille)
+#4 Un serveur affecte apparait au plus une fois
+#5 Un serveur affecte appartient a exactement un pool
+
     """
-    contrainte 1 : un serveur par slot (  un marqueur max par slot + pas de chevauchement de serveurs)
+    contrainte 1 : Au plus un serveur occupe un slot (un marqueur max par slot + pas de chevauchement de serveurs)
     """
-    
-    for key, value in k_rs.iteritems():
+    for (r,s), listeServeurs in k_rs.iteritems():
         somme = 0
-        if not len(value) == 0:
-            for serveur in value:
-                tailleServeur = dicoServeurCarac[str(serveur)][0]
-                for i in range(0,tailleServeur):
-                    if str(key[1]+i) in z_mrsi[str(serveur)][str(key[0])]:
-                        for a,b in z_mrsi[str(serveur)][str(key[0])][str(key[1]+i)].iteritems():
+        if not len(listeServeurs) == 0:
+            tailleServeurMax = max([dicoServeurCarac[str(idServ)][0] for idServ in listeServeurs])
+            for serveur in listeServeurs:
+                for i in range(0,tailleServeurMax):
+                    if str(s+i) in z_mrsi[str(serveur)][str(r)]:
+                        for a,b in z_mrsi[str(serveur)][str(r)][str(s+i)].iteritems():
                             somme += b
-            print(somme, " <=  1 ") 
-            model.addConstr(somme <= 1, "Contrainte 1 : un marqueur max par slot %d %d" % (key[0], key[1]))
+            if not type(somme) == type(0):
+                model.addConstr(somme <= 1, "Contrainte 1 : un marqueur max par slot {0} {1}".format(r, s))
  
-        
-    
+    """
+    contrainte 2 : Un serveur apparait au plus une fois dans une affectation
+    (avec un unique pool)
+    """    
+    for m in z_mrsi:
+        somme = 0
+        for r in z_mrsi[str(m)]:
+            for s in z_mrsi[str(m)][str(r)]:
+                for i in z_mrsi[str(m)][str(r)][str(s)]:
+                    somme += z_mrsi[str(m)][str(r)][str(s)][str(i)]
+        if not type(somme) == type(0):
+            print somme, "<= 1"
+            model.addConstr(somme <= 1, "Contrainte 2 : le serveur {0} apparait au plus une fois dans l'affectation".format(m))
 
 def main():
     nomFichier = "petiteInstance.in"
