@@ -682,11 +682,16 @@ def unVoisinAffectation2(affectation, carac, listeServeurs, dicoObstacles):
 ###############################################################################
 def main():
     nomFichier = "dc.in"
-    pourcentage = 30
-    recuitSimule(creeFichierInstancePourcentage(nomFichier,pourcentage))
+    pourcentage = 20
+#    recuitSimule(creeFichierInstancePourcentage(nomFichier,pourcentage))
 ##    for pourcentage in range(10,110,10):
 ##        print("pourcentage : ", pourcentage)
 ##        recuitSimule(creeFichierInstancePourcentage(nomFichier,pourcentage))
+
+    print "methode gloutonne 2"
+    affectation, carac, listeServeurs, dicoRangees, dicoObstacles = methodeGloutonne2(creeFichierInstancePourcentage(nomFichier,pourcentage))
+    score, idRangee, numPool = calculScore(affectation, carac, listeServeurs)
+    print "Score : ", score
         
         
         
