@@ -548,15 +548,14 @@ def capaciteGarantie(affectation, numPool, carac, listeServeurs):
     # Calcul de la capacite des serveurs d'un pool precis pour chaque rangee
     listeCapaciteParRangee = [0 for i in range(carac["R"])]
     capaciteTotale = 0
-    
     for serveurId, triplet in affectation.iteritems():
         if triplet != 'x':
-            if triplet[2] == numPool:
+            if int(triplet[2]) == numPool:
                 for s in listeServeurs:
                     if serveurId == str(s[0]):
                         capacite = s[2]
                         break
-                listeCapaciteParRangee[triplet[0]] += capacite
+                listeCapaciteParRangee[int(triplet[0])] += capacite
                 capaciteTotale += capacite
     
     # Initialisation

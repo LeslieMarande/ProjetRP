@@ -6,8 +6,8 @@ import extraireDonnees
 # r : id rangee
 
 model = g.Model("RP-OptimizeDataCenter")
-model.setParam( 'OutputFlag', False) #Desactive  le mode verbeux
-model.setParam('TimeLimit', 2*60) #Limite de temps pour la resolution 
+model.setParam('OutputFlag', False) #Desactive  le mode verbeux
+model.setParam('TimeLimit', 2*60) #Limite de temps pour la resolution     
 
 def creerVariables(fileName, choix):
     """
@@ -58,7 +58,7 @@ def creerVariables(fileName, choix):
     
     model.update()
 
-    return z_mrsi, dicoServeurCarac, k_rs, carac
+    return z_mrsi, dicoServeurCarac, k_rs, carac, listeServeurs
 
 def contraintes(z_mrsi, dicoServeurCarac, k_rs):
 
@@ -103,7 +103,6 @@ def linearisationFonctionObj(z_mrsi, carac, dicoServeurCarac):
     '''
     contrainte 3 : linearisation de la capacite garantie du pool i pour une affectation
     '''
-    
     sommeCapacitesParPoolParRangee = []
     for i in range(carac["P"]):
         sommeCapacitesParPoolParRangee.append([])
@@ -116,14 +115,11 @@ def linearisationFonctionObj(z_mrsi, carac, dicoServeurCarac):
                 for i in z_mrsi[m][r][s].keys():
                     sommeCapacitesParPoolParRangee[int(i)][int(r)] += z_mrsi[m][r][s][i] * dicoServeurCarac[m][1]
     
-    gc_i = {}
     score = model.addVar(vtype = g.GRB.INTEGER, name = "score")
     for i in range(carac["P"]):
-        gc_i[i] = model.addVar(vtype = g.GRB.INTEGER, name="gc_i {0}".format(i))
         sommeTotale = sum(sommeCapacitesParPoolParRangee[i][:])
         for r in range(carac["R"]):
-            model.addConstr(gc_i[i] <= sommeTotale - sommeCapacitesParPoolParRangee[i][r], "Contrainte 3 : capacite garantie par le pool {0} sans la rangee {1}".format(i, r))
-        model.addConstr(score <= gc_i[i])
+            model.addConstr(score <= sommeTotale - sommeCapacitesParPoolParRangee[i][r], "Contrainte 3 : capacite garantie par le pool {0} sans la rangee {1}".format(i, r))
     
     f_obj = g.LinExpr() # Variable Gurobi pour une expression lineaire
     f_obj = score
@@ -131,8 +127,6 @@ def linearisationFonctionObj(z_mrsi, carac, dicoServeurCarac):
     
     model.setParam('TimeLimit', 2 * 60)
     model.optimize() # Resolution du Programme Linaire
-    model.write("Programme lineaire.lp") # Ecriture du Programme Lineaire dans un fichier
-    
     print""
     print "Solution"
     print"Valeur optimale de la fonction objectif : ", model.objVal
@@ -143,30 +137,42 @@ def linearisationFonctionObj(z_mrsi, carac, dicoServeurCarac):
         print "PL non resolvable dans la limite de temps"
     print""
     
-    for m in z_mrsi.keys():
-        for r in z_mrsi[m].keys():
-            for s in z_mrsi[m][r].keys():
-                for i in z_mrsi[m][r][s].keys():
-                    if z_mrsi[m][r][s][i].x != 0:
-                        print "z_mrsi_{0}_{1}_{2}_{3} = {4}".format(m, r, s, i, z_mrsi[m][r][s][i].x)
+    model.write("Programme lineaire.lp") # Ecriture du Programme Lineaire dans un fichier
+    
+#    for m in z_mrsi.keys():
+#        for r in z_mrsi[m].keys():
+#            for s in z_mrsi[m][r].keys():
+#                for i in z_mrsi[m][r][s].keys():
+#                    if z_mrsi[m][r][s][i].x != 0:
+#                        print "z_mrsi_{0}_{1}_{2}_{3} = {4}".format(m, r, s, i, z_mrsi[m][r][s][i].x)
                 
     return z_mrsi
-                    
-def heuristiquesArrondi(nomFichier, pourcentage): # il faut listeServeurs
-    nomFichierInstance = extraireDonnees.creeFichierInstancePourcentage(nomFichier,pourcentage)
-    z_mrsi,dicoServeurCarac,k_rs, carac = creerVariables(nomFichierInstance, "pl") 
-    contraintes(z_mrsi,dicoServeurCarac,k_rs)
+
+def resolution_PL(nomFichier, pourcentage, choix):
+    """
+    Fonction a appeler pour lancer la resolution par PL ou PLNE avec Gurobi
+    """
+    nomFichierInstance = extraireDonnees.creeFichierInstancePourcentage(nomFichier, pourcentage)
+    z_mrsi, dicoServeurCarac, k_rs, carac, listeServeurs = creerVariables(nomFichierInstance, choix)
+    contraintes(z_mrsi, dicoServeurCarac, k_rs)
     z_mrsi = linearisationFonctionObj(z_mrsi, carac, dicoServeurCarac)
+#    print z_mrsi 
+    return z_mrsi, dicoServeurCarac, carac, listeServeurs
+                    
+def heuristiquesArrondi(nomFichier, pourcentage):
+    z_mrsi, dicoServeurCarac, carac, listeServeurs = resolution_PL(nomFichier, pourcentage, "pl")
     
-    
+    # cle : id du serveur, valeur : True / False pour savoir par la suite si le serveur est deja affecte ou non
+    masqueServeurLibre = {}
     listeTriee = []
     for m in z_mrsi.keys():
+        masqueServeurLibre[m] = True
         for r in z_mrsi[m].keys():
             for s in z_mrsi[m][r].keys():
                 for i in z_mrsi[m][r][s].keys():
                     listeTriee.append((m, r, s, i, z_mrsi[m][r][s][i].x))
     
-    listeTriee.sort(key = lambda tup : tup[4])
+    listeTriee.sort(key = lambda tup : tup[4], reverse = True)
     
     dicoVerif = {}
     affectation = {}
@@ -176,33 +182,29 @@ def heuristiquesArrondi(nomFichier, pourcentage): # il faut listeServeurs
             
     for elt in listeTriee:
         placementOk = True
-        taille = dicoServeurCarac[elt[0]]
-        for s in range(taille):
-            if(dicoVerif[elt[1]][elt[2]+s] != ''):
-                placementOk = False
-                break
-        if placementOk:
-            affectation[elt[0]] = [elt[1],elt[2],elt[3]] 
+        taille = dicoServeurCarac[elt[0]][0]
+        if masqueServeurLibre[elt[0]]:
             for s in range(taille):
-                dicoVerif[elt[1]][elt[2]+s] = elt[0]
-        else: 
-            affectation[elt[0]] = 'x'
-            
-     calculScore(affectation, carac, listeServeurs)
-    
-    
-    
-
-        
+                if(dicoVerif[elt[1]][int(elt[2]) + s] != ''):
+                    placementOk = False
+                    break
+            # Si on peut le placer et que le serveur n'a pas encore ete affecte, on le place et on l'affecte
+            if placementOk:
+                affectation[elt[0]] = [elt[1],elt[2],elt[3]]
+                masqueServeurLibre[elt[0]] = False
+                for s in range(taille):
+                    dicoVerif[elt[1]][int(elt[2]) + s] = elt[0]
+            else: 
+                affectation[elt[0]] = 'x'
+          
+    score, idRangee, numPool = extraireDonnees.calculScore(affectation, carac, listeServeurs)
+    print "Score obtenu avec l'heuristique arrondi :", score    
 
 def main():
     nomFichier = "dc.in"
     pourcentage = 20
-    choix = "pl"
     
-    nomFichierInstance = extraireDonnees.creeFichierInstancePourcentage(nomFichier,pourcentage)
-    z_mrsi,dicoServeurCarac,k_rs, carac = creerVariables(nomFichierInstance, choix)
-    contraintes(z_mrsi,dicoServeurCarac,k_rs)
-    linearisationFonctionObj(z_mrsi, carac, dicoServeurCarac)
-#    print z_mrsi
+#    resolution_PL(nomFichier, pourcentage, "plne")
+    heuristiquesArrondi(nomFichier, pourcentage)
     
+main()
