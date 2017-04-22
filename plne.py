@@ -177,7 +177,7 @@ def heuristiqueArrondi1(nomFichier, pourcentage):
     affectation = {}
     
     for i in range(0, carac['R']):
-            dicoVerif[str(i)]= ['' for j in range(carac['S'])]
+        dicoVerif[str(i)]= ['' for j in range(carac['S'])]
             
     for elt in listeTriee:
         placementOk = True
@@ -198,11 +198,10 @@ def heuristiqueArrondi1(nomFichier, pourcentage):
           
     score, idRangee, numPool = extraireDonnees.calculScore(affectation, carac, dicoCaracServeur)
     print "Score obtenu avec l'heuristique arrondi :", score
-    
-    return z_mrsi, dicoCaracServeur, carac
 
-def heuristiqueArrondi2(nomFichier, pourcentage, z_mrsi, dicoCaracServeur, carac):
-#    z_mrsi, dicoCaracServeur, carac = resolution_PL(nomFichier, pourcentage, "pl")
+
+def heuristiqueArrondi2(nomFichier, pourcentage):
+    z_mrsi, dicoCaracServeur, carac = resolution_PL(nomFichier, pourcentage, "pl")
    
     masqueServeurLibre = {}
     listeTriee = []
@@ -219,7 +218,7 @@ def heuristiqueArrondi2(nomFichier, pourcentage, z_mrsi, dicoCaracServeur, carac
     affectation = {}
     
     for i in range(0, carac['R']):
-            dicoVerif[str(i)]= ['' for j in range(carac['S'])]
+        dicoVerif[str(i)]= ['' for j in range(carac['S'])]
             
     
     capacitesPools = []
@@ -247,13 +246,63 @@ def heuristiqueArrondi2(nomFichier, pourcentage, z_mrsi, dicoCaracServeur, carac
         
     score, idRangee, numPool = extraireDonnees.calculScore(affectation, carac, dicoCaracServeur)
     print "Score obtenu avec NOTRE heuristique arrondi :", score
+
+def heuristiqueArrondi3(nomFichier, pourcentage):
+    z_mrsi, dicoCaracServeur, carac = resolution_PL(nomFichier, pourcentage, "pl")
+   
+    masqueServeurLibre = {}
+    listeTriee = []
+    for m in z_mrsi.keys():
+        masqueServeurLibre[m] = True
+        for r in z_mrsi[m].keys():
+            for s in z_mrsi[m][r].keys():
+                for i in z_mrsi[m][r][s].keys():
+                    listeTriee.append((m, r, s, i, z_mrsi[m][r][s][i].x))
+    
+    listeTriee.sort(key = lambda tup : tup[4], reverse = True)
+    
+    dicoVerif = {}
+    affectation = {}
+    rangeeCapacitesPools = {}
+    
+    for i in range(0, carac['R']):
+        dicoVerif[str(i)]= ['' for j in range(carac['S'])]
+        rangeeCapacitesPools[i]=[]
+        for j in range(0,carac['P']):
+            rangeeCapacitesPools[i].append([j,0])    
+                
+    for elt in listeTriee:
+        placementOk = True
+        taille = dicoCaracServeur[elt[0]][0]
+        if masqueServeurLibre[elt[0]]:
+            for s in range(taille):
+                if(dicoVerif[elt[1]][int(elt[2]) + s] != ''):
+                    placementOk = False
+                    break
+            
+            if placementOk:
+                affectation[elt[0]] = [int(elt[1]),int(elt[2]),rangeeCapacitesPools[int(elt[1])][0][0]] # affecte le pool qui a le moins de capacite
+                rangeeCapacitesPools[int(elt[1])][0][1] += dicoCaracServeur[elt[0]][1] #ajoute sa capacité au pool
+                
+                rangeeCapacitesPools[int(elt[1])].sort(key = lambda tup : tup[1])
+                masqueServeurLibre[elt[0]] = False #marque ce serveur comme déjà place
+                for s in range(taille):
+                    dicoVerif[elt[1]][int(elt[2]) + s] = elt[0]
+                    
+            else: 
+                affectation[elt[0]] = 'x'
+        
+    score, idRangee, numPool = extraireDonnees.calculScore(affectation, carac, dicoCaracServeur)
+    print "Score obtenu avec NOTRE heuristique arrondi :", score
+    
     
 def main():
     nomFichier = "dc.in"
-    pourcentage = 20
+    pourcentage = 50
     
 #    resolution_PL(nomFichier, pourcentage, "plne")
-    z_mrsi, dicoCaracServeur, carac = heuristiqueArrondi1(nomFichier, pourcentage)
-    heuristiqueArrondi2(nomFichier, pourcentage, z_mrsi, dicoCaracServeur, carac)
+#    heuristiqueArrondi1(nomFichier, pourcentage)
+#    heuristiqueArrondi2(nomFichier, pourcentage)
+    heuristiqueArrondi3(nomFichier, pourcentage)
     
 main()

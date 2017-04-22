@@ -5,6 +5,7 @@
 import random
 import math
 from copy import deepcopy
+import time
 
 # Instances : Q 0.2.
 ###############################################################################
@@ -150,14 +151,8 @@ def methodeGloutonne1(fileName):
         slotTrouve = False
     
     #Affection des pools 
-    numPool = 0 
-    for s in dicoRangees['0']:
-        if not s == 'x':
-            valTemp = s
-            affectation[s].append(numPool)
-            numPool +=1
-            break
-        
+    numPool = -1
+    valTemp = None        
     for k in dicoRangees.keys() :
         for v in dicoRangees[k]:
             if not v == 'x':
@@ -289,14 +284,14 @@ def descenteStochastique(fileName):
     nouvelleAffectation = {}
     nouveauDicoObstacles = {}
     cpt = 0
-    maxIteration = 4000
+    maxIteration = 1000
     
     # dicoCaracServeur["id du serveur"] = [taille du serveur, capacite du serveur]
     dicoCaracServeur = {}
     for serveur in listeServeurs:
         dicoCaracServeur[str(serveur[0])] = [serveur[1], serveur[2]]
 
-    print("Score avant descente: ",calculScore(affectation, carac, dicoCaracServeur)[0] )
+    print "Score avant descente: ",calculScore(affectation, carac, dicoCaracServeur)[0]
     
     while cpt < maxIteration:
         nbAlea = random.random()
@@ -310,7 +305,7 @@ def descenteStochastique(fileName):
         else:
             nouvelleAffectation = voisinageChangementPool(affectation, carac)
         cpt+=1
-       # print("Nouveau score",calculScore(nouvelleAffectation, carac, listeServeurs)[0] )
+       # print("Nouveau score",calculScore(nouvelleAffectation, carac, dicoCaracServeur)[0] )
         if calculScore(nouvelleAffectation, carac, dicoCaracServeur)[0] >= calculScore(affectation, carac, dicoCaracServeur)[0]:
         #    print("BETTER")
             affectation = deepcopy(nouvelleAffectation)
@@ -318,7 +313,7 @@ def descenteStochastique(fileName):
                 dicoObstacles = deepcopy(nouveauDicoObstacles)
         
 ##        if cpt %4 == 0:
-##            if calculScore(nouvelleAffectation, carac, listeServeurs)[0] >= calculScore(bestAffectation, carac, listeServeurs)[0]:
+##            if calculScore(nouvelleAffectation, carac, dicoCaracServeur)[0] >= calculScore(bestAffectation, carac, dicoCaracServeur)[0]:
 ##                affectation = nouvelleAffectation
 ##                dicoObstacles = nouveauDicoObstacles
 ##                bestAffectation = deepcopy(affectation)
@@ -333,7 +328,7 @@ def descenteStochastique(fileName):
 
 
         
-    print("Score final: ", calculScore(affectation, carac, listeServeurs)[0])
+    print "Score final: ", calculScore(affectation, carac, dicoCaracServeur)[0]
     
     
     return None 
@@ -353,7 +348,12 @@ def voisinageEnleverUnServeur(affectation, dicoCaracServeur, dicoObstacles):
     for serveurId in affectation:
         if affectation[serveurId] != 'x':
             listeServeursAffectes.append(serveurId)
-        
+    
+    # Si on essaye d'enlever un serveur alors qu'on a deja enlever tous les serveur,
+    # on retourne l'affectation courante, i.e. avec aucun serveur affecte
+    if listeServeursAffectes == []:
+        return affectation, dicoObstacles
+    
     serveurSelectionne = random.choice(listeServeursAffectes)
     
     nouvelleAffectation = deepcopy(affectation)
@@ -398,7 +398,12 @@ def voisinageChangementPool(affectation, carac):
     for serveurId in affectation:
         if affectation[serveurId] != 'x':
             listeServeursAffectes.append(serveurId)
-            
+    
+    # Si on essaye de changer le pool d'un serveur alors qu'il n'y a aucun serveur affecte,
+    # on retourne l'affectation courante, i.e. avec aucun serveur affecte        
+    if listeServeursAffectes == []:
+        return affectation
+    
     serveurSelectionne = random.choice(listeServeursAffectes)
     #print("serveur,pool")
     #print(serveurSelectionne,affectation[serveurSelectionne][2])
@@ -438,41 +443,71 @@ def voisinageServeurNonAffecte(affectation, dicoCaracServeur, dicoObstacles, car
 
 ##    print("Serveurs non affectes")
 ##    print(listeServeursNonAffectes)
+       
+###############################################################################
+###############################################################################
+    if len(listeServeursNonAffectes) == 0:
+        #print("Tous les serveurs sont affectes")
+        return affectation, dicoObstacles
     
-    '''
-    Dans la boucle suivante,
-    On tire un serveur au hasard parmi les serveurs non encore affectes,
-    (rq : s'il n'y a aucun serveur non affecte, on retourne la solution initiale)
-    on cherche toute les positions ou ce serveur peut etre affecte,
-    s'il n'y a aucune position, on retire ce serveur de la liste des serveurs non encore affectes et on reboucle
-    sinon on sort de la boucle
-    '''
-    pasDePositionsTrouvees = False
-    while pasDePositionsTrouvees:
-        if len(listeServeursNonAffectes) == 0:
-            #print("Tous les serveurs sont affectes ou aucune position possible trouvee pour les serveurs non encore affectes")
-            return affectation, dicoObstacles
-        
-        serveurSelectionne = random.choice(listeServeursNonAffectes)
-        taille = dicoCaracServeur[serveurSelectionne]
-#        print("serveur choisi")
-#        print(serveurSelectionne)
-        
-        # l_m, l'ensemble des slots (r,s) a partir duquel le serveur peut etre localises
-        l_m = []
-        for i in range(carac["R"]):
-            a = genererListe_l_m(dicoObstacles[str(i)], taille, carac["S"], i)
-            if not len(a) == 0: 
-                l_m += a
+    serveurSelectionne = random.choice(listeServeursNonAffectes)
+
+##    print("serveur choisi")
+##    print(serveurSelectionne)
     
-        #print("Slots Possibles")
-        #print(l_m)
-        
-        if len(l_m) == 0:
-            listeServeursNonAffectes.remove(serveurSelectionne)
-        else:
-            pasDePositionsTrouvees = False
-    
+    taille = dicoCaracServeur[serveurSelectionne]
+            
+    # l_m, l'ensemble des slots (r,s) a partir duquel le serveur peut etre localises
+    l_m = []
+    for i in range(carac["R"]):
+        a = genererListe_l_m(dicoObstacles[str(i)], taille, carac["S"], i)
+        if not len(a) == 0: 
+            l_m += a
+
+    #print("Slots Possibles")
+    #print(l_m)
+
+    if len(l_m) == 0:
+        #print("aucun endroit dispo")
+        return affectation, dicoObstacles
+###############################################################################
+###############################################################################
+#    '''
+#    Dans la boucle suivante,
+#    On tire un serveur au hasard parmi les serveurs non encore affectes,
+#    (rq : s'il n'y a aucun serveur non affecte, on retourne la solution initiale)
+#    on cherche toute les positions ou ce serveur peut etre affecte,
+#    s'il n'y a aucune position, on retire ce serveur de la liste des serveurs non encore affectes et on reboucle
+#    sinon on sort de la boucle
+#    '''
+#    pasDePositionsTrouvees = True
+#    while pasDePositionsTrouvees:
+#        if len(listeServeursNonAffectes) == 0:
+#            #print("Tous les serveurs sont affectes ou aucune position possible trouvee pour les serveurs non encore affectes")
+#            return affectation, dicoObstacles
+#        
+#        serveurSelectionne = random.choice(listeServeursNonAffectes)
+#        taille = dicoCaracServeur[serveurSelectionne]
+##        print("serveur choisi")
+##        print(serveurSelectionne)
+#        
+#        # l_m, l'ensemble des slots (r,s) a partir duquel le serveur peut etre localises
+#        l_m = []
+#        for i in range(carac["R"]):
+#            a = genererListe_l_m(dicoObstacles[str(i)], taille, carac["S"], i)
+#            if not len(a) == 0: 
+#                l_m += a
+#    
+#        #print("Slots Possibles")
+#        #print(l_m)
+#        
+#        if len(l_m) == 0:
+#            listeServeursNonAffectes.remove(serveurSelectionne)
+#        else:
+#            pasDePositionsTrouvees = False
+###############################################################################
+###############################################################################
+
     nouvellePosition = random.choice(l_m)
     
     nouveauPool = random.choice(range(carac["P"]))
@@ -612,14 +647,20 @@ def recuitSimule(fileName):
     nouveauDicoObstacles = dicoObstacles
     RX = affectation
     X = affectation
-    print("Score avant descente: ",calculScore(affectation, carac, listeServeurs)[0] )
+    
+    # dicoCaracServeur["id du serveur"] = [taille du serveur, capacite du serveur]
+    dicoCaracServeur = {}
+    for serveur in listeServeurs:
+        dicoCaracServeur[str(serveur[0])] = [serveur[1], serveur[2]]
+        
+    print("Score avant descente: ",calculScore(affectation, carac, dicoCaracServeur)[0] )
     
     while(temperature > 0 ):         
         
         Y, nouveauDicoObstacles = unVoisinAffectation2(X,carac,listeServeurs,dicoObstacles)
-        scoreY = calculScore(Y,carac,listeServeurs)[0]
-        scoreRX = calculScore(RX,carac,listeServeurs)[0]
-        scoreX = calculScore(X,carac,listeServeurs)[0]
+        scoreY = calculScore(Y,carac,dicoCaracServeur)[0]
+        scoreRX = calculScore(RX,carac,dicoCaracServeur)[0]
+        scoreX = calculScore(X,carac,dicoCaracServeur)[0]
        # print("ScoreY, ScoreX, ScoreRX")
         #print( scoreY, scoreX, scoreRX)
         
@@ -642,7 +683,7 @@ def recuitSimule(fileName):
        
         temperature -= 1
             
-    print("Score apres descente: ",calculScore(RX, carac, listeServeurs)[0] )
+    print("Score apres descente: ",calculScore(RX, carac, dicoCaracServeur)[0] )
     
 
 def unVoisinAffectation(affectation, carac, listeServeurs, dicoObstacles):
@@ -701,11 +742,7 @@ def main():
 ##        print("pourcentage : ", pourcentage)
 ##        recuitSimule(creeFichierInstancePourcentage(nomFichier,pourcentage))
 
-    print "methode gloutonne 2"
-    affectation, carac, listeServeurs, dicoRangees, dicoObstacles = methodeGloutonne2(creeFichierInstancePourcentage(nomFichier,pourcentage))
-    score, idRangee, numPool = calculScore(affectation, carac, listeServeurs)
-    print "Score : ", score
-        
+    descenteStochastique(creeFichierInstancePourcentage(nomFichier,pourcentage))
         
         
 ###############################################################################
@@ -722,21 +759,25 @@ def testAllPourcentage():
         print("--------")
         print "methode gloutonne 1"
         affectation, carac, listeServeurs, dicoRangees, dicoObstacles = methodeGloutonne1(creeFichierInstancePourcentage(nomFichier,pourcentage))
-        score, idRangee, numPool = calculScore(affectation, carac, listeServeurs)
+        
+         # dicoCaracServeur["id du serveur"] = [taille du serveur, capacite du serveur]
+        dicoCaracServeur = {}
+        for serveur in listeServeurs:
+            dicoCaracServeur[str(serveur[0])] = [serveur[1], serveur[2]]
+        
+        score, idRangee, numPool = calculScore(affectation, carac, dicoCaracServeur)
         print "END"
         print score, idRangee, numPool
         
         print "methode gloutonne 2"
         affectation, carac, listeServeurs, dicoRangees, dicoObstacles = methodeGloutonne2(creeFichierInstancePourcentage(nomFichier,pourcentage))
-        score, idRangee, numPool = calculScore(affectation, carac, listeServeurs)
+        score, idRangee, numPool = calculScore(affectation, carac, dicoCaracServeur)
         print "Score : ", score
 
 def testStochastique():
     nomFichier = "dc.in"
-    #pourcentage = 60
     for pourcentage in range(10,110,10):
         print("pourcentage : ", pourcentage)
+        startTime = time.time()
         descenteStochastique(creeFichierInstancePourcentage(nomFichier,pourcentage))
-
-
-    
+        print "duree d'execution : ", time.time() - startTime
