@@ -7,16 +7,16 @@ import extraireDonnees
 
 model = g.Model("RP-OptimizeDataCenter")
 model.setParam('OutputFlag', False) #Desactive  le mode verbeux
-model.setParam('TimeLimit', 2*60) #Limite de temps pour la resolution     
+model.setParam('TimeLimit', 5*60) #Limite de temps pour la resolution     
 
 def creerVariables(fileName, choix):
     """
-    Creer et retourne les dictionnaires z_mrsi, dicoServeurCarac et k_rs :
+    Creer et retourne les dictionnaires z_mrsi, dicoCaracServeur et k_rs :
     - Les variables Gurobi du PLNE
         z_mrsi["id du serveur"]["num rangee"]["num slot"]["num pool"]
     
     - Un dictionnaire contenant les caracteristiques de chaque serveur
-        dicoServeurCarac["id du serveur"] = [taille du serveur, capacite du serveur]
+        dicoCaracServeur["id du serveur"] = [taille du serveur, capacite du serveur]
     
     - Pour chaque emplacement (rangee, slot) l'ensemble des serveurs pouvant etre localises a cet emplacement
         k_rs[(idRangee,idSlot)]=[idServeur1, idserveur2,...]
@@ -24,10 +24,10 @@ def creerVariables(fileName, choix):
     z_mrsi = {}
     carac, dicoObstacles, listeServeurs, dicoRangees = extraireDonnees.creeStructureDonnees(fileName)
     
-    # dicoServeurCarac["id du serveur"] = [taille du serveur, capacite du serveur]
-    dicoServeurCarac = {}
+    # dicoCaracServeur["id du serveur"] = [taille du serveur, capacite du serveur]
+    dicoCaracServeur = {}
     for serveur in listeServeurs:
-        dicoServeurCarac[str(serveur[0])] = [serveur[1], serveur[2]]
+        dicoCaracServeur[str(serveur[0])] = [serveur[1], serveur[2]]
         
     k_rs = {}
     for r in range(carac['R']):
@@ -42,7 +42,7 @@ def creerVariables(fileName, choix):
             
             z_mrsi[str(m)][str(r)] = {}
             
-            l_m = extraireDonnees.genererListe_l_m(dicoObstacles[str(r)],dicoServeurCarac[str(m)][0], carac["S"], r)
+            l_m = extraireDonnees.genererListe_l_m(dicoObstacles[str(r)],dicoCaracServeur[str(m)][0], carac["S"], r)
             
             for couple in l_m:
                 
@@ -58,9 +58,9 @@ def creerVariables(fileName, choix):
     
     model.update()
 
-    return z_mrsi, dicoServeurCarac, k_rs, carac, listeServeurs
+    return z_mrsi, dicoCaracServeur, k_rs, carac, listeServeurs
 
-def contraintes(z_mrsi, dicoServeurCarac, k_rs):
+def contraintes(z_mrsi, dicoCaracServeur, k_rs):
 
     """ Contraintes """
 #1 Chaque slot contient au plus un serveur
@@ -75,7 +75,7 @@ def contraintes(z_mrsi, dicoServeurCarac, k_rs):
     for (r,s), listeServeurs in k_rs.iteritems():
         somme = 0
         if not len(listeServeurs) == 0:
-            tailleServeurMax = max([dicoServeurCarac[str(idServ)][0] for idServ in listeServeurs])
+            tailleServeurMax = max([dicoCaracServeur[str(idServ)][0] for idServ in listeServeurs])
             for serveur in listeServeurs:
                 for i in range(0,tailleServeurMax):
                     if str(s+i) in z_mrsi[str(serveur)][str(r)]:
@@ -99,7 +99,7 @@ def contraintes(z_mrsi, dicoServeurCarac, k_rs):
             model.addConstr(somme <= 1, "Contrainte 2 : le serveur {0} apparait au plus une fois dans l'affectation".format(m))
     
     
-def linearisationFonctionObj(z_mrsi, carac, dicoServeurCarac):
+def linearisationFonctionObj(z_mrsi, carac, dicoCaracServeur):
     '''
     contrainte 3 : linearisation de la capacite garantie du pool i pour une affectation
     '''
@@ -113,7 +113,7 @@ def linearisationFonctionObj(z_mrsi, carac, dicoServeurCarac):
         for r in z_mrsi[m].keys():
             for s in z_mrsi[m][r].keys():
                 for i in z_mrsi[m][r][s].keys():
-                    sommeCapacitesParPoolParRangee[int(i)][int(r)] += z_mrsi[m][r][s][i] * dicoServeurCarac[m][1]
+                    sommeCapacitesParPoolParRangee[int(i)][int(r)] += z_mrsi[m][r][s][i] * dicoCaracServeur[m][1]
     
     score = model.addVar(vtype = g.GRB.INTEGER, name = "score")
     for i in range(carac["P"]):
@@ -125,7 +125,6 @@ def linearisationFonctionObj(z_mrsi, carac, dicoServeurCarac):
     f_obj = score
     model.setObjective(f_obj, g.GRB.MAXIMIZE)
     
-    model.setParam('TimeLimit', 2 * 60)
     model.optimize() # Resolution du Programme Linaire
     print""
     print "Solution"
@@ -153,14 +152,14 @@ def resolution_PL(nomFichier, pourcentage, choix):
     Fonction a appeler pour lancer la resolution par PL ou PLNE avec Gurobi
     """
     nomFichierInstance = extraireDonnees.creeFichierInstancePourcentage(nomFichier, pourcentage)
-    z_mrsi, dicoServeurCarac, k_rs, carac, listeServeurs = creerVariables(nomFichierInstance, choix)
-    contraintes(z_mrsi, dicoServeurCarac, k_rs)
-    z_mrsi = linearisationFonctionObj(z_mrsi, carac, dicoServeurCarac)
+    z_mrsi, dicoCaracServeur, k_rs, carac, listeServeurs = creerVariables(nomFichierInstance, choix)
+    contraintes(z_mrsi, dicoCaracServeur, k_rs)
+    z_mrsi = linearisationFonctionObj(z_mrsi, carac, dicoCaracServeur)
 #    print z_mrsi 
-    return z_mrsi, dicoServeurCarac, carac, listeServeurs
+    return z_mrsi, dicoCaracServeur, carac
                     
-def heuristiquesArrondi(nomFichier, pourcentage):
-    z_mrsi, dicoServeurCarac, carac, listeServeurs = resolution_PL(nomFichier, pourcentage, "pl")
+def heuristiqueArrondi1(nomFichier, pourcentage):
+    z_mrsi, dicoCaracServeur, carac = resolution_PL(nomFichier, pourcentage, "pl")
     
     # cle : id du serveur, valeur : True / False pour savoir par la suite si le serveur est deja affecte ou non
     masqueServeurLibre = {}
@@ -182,7 +181,7 @@ def heuristiquesArrondi(nomFichier, pourcentage):
             
     for elt in listeTriee:
         placementOk = True
-        taille = dicoServeurCarac[elt[0]][0]
+        taille = dicoCaracServeur[elt[0]][0]
         if masqueServeurLibre[elt[0]]:
             for s in range(taille):
                 if(dicoVerif[elt[1]][int(elt[2]) + s] != ''):
@@ -190,21 +189,71 @@ def heuristiquesArrondi(nomFichier, pourcentage):
                     break
             # Si on peut le placer et que le serveur n'a pas encore ete affecte, on le place et on l'affecte
             if placementOk:
-                affectation[elt[0]] = [elt[1],elt[2],elt[3]]
+                affectation[elt[0]] = [int(elt[1]),int(elt[2]),int(elt[3])]
                 masqueServeurLibre[elt[0]] = False
                 for s in range(taille):
                     dicoVerif[elt[1]][int(elt[2]) + s] = elt[0]
             else: 
                 affectation[elt[0]] = 'x'
           
-    score, idRangee, numPool = extraireDonnees.calculScore(affectation, carac, listeServeurs)
-    print "Score obtenu avec l'heuristique arrondi :", score    
+    score, idRangee, numPool = extraireDonnees.calculScore(affectation, carac, dicoCaracServeur)
+    print "Score obtenu avec l'heuristique arrondi :", score
+    
+    return z_mrsi, dicoCaracServeur, carac
 
+def heuristiqueArrondi2(nomFichier, pourcentage, z_mrsi, dicoCaracServeur, carac):
+#    z_mrsi, dicoCaracServeur, carac = resolution_PL(nomFichier, pourcentage, "pl")
+   
+    masqueServeurLibre = {}
+    listeTriee = []
+    for m in z_mrsi.keys():
+        masqueServeurLibre[m] = True
+        for r in z_mrsi[m].keys():
+            for s in z_mrsi[m][r].keys():
+                for i in z_mrsi[m][r][s].keys():
+                    listeTriee.append((m, r, s, i, z_mrsi[m][r][s][i].x))
+    
+    listeTriee.sort(key = lambda tup : tup[4], reverse = True)
+    
+    dicoVerif = {}
+    affectation = {}
+    
+    for i in range(0, carac['R']):
+            dicoVerif[str(i)]= ['' for j in range(carac['S'])]
+            
+    
+    capacitesPools = []
+    for a in range(carac['P']):
+        capacitesPools.append(0)
+        
+        
+    for elt in listeTriee:
+        placementOk = True
+        taille = dicoCaracServeur[elt[0]][0]
+        if masqueServeurLibre[elt[0]]:
+            for s in range(taille):
+                if(dicoVerif[elt[1]][int(elt[2]) + s] != ''):
+                    placementOk = False
+                    break
+            
+            if placementOk:  
+                affectation[elt[0]] = [int(elt[1]),int(elt[2]),capacitesPools.index(min(capacitesPools))] # affecte le pool qui a le moins de capacite
+                capacitesPools[capacitesPools.index(min(capacitesPools))] += dicoCaracServeur[elt[0]][1] #ajoute sa capacité au pool
+                masqueServeurLibre[elt[0]] = False #marque ce serveur comme déjà place
+                for s in range(taille):
+                    dicoVerif[elt[1]][int(elt[2]) + s] = elt[0]
+            else: 
+                affectation[elt[0]] = 'x'
+        
+    score, idRangee, numPool = extraireDonnees.calculScore(affectation, carac, dicoCaracServeur)
+    print "Score obtenu avec NOTRE heuristique arrondi :", score
+    
 def main():
     nomFichier = "dc.in"
     pourcentage = 20
     
 #    resolution_PL(nomFichier, pourcentage, "plne")
-    heuristiquesArrondi(nomFichier, pourcentage)
+    z_mrsi, dicoCaracServeur, carac = heuristiqueArrondi1(nomFichier, pourcentage)
+    heuristiqueArrondi2(nomFichier, pourcentage, z_mrsi, dicoCaracServeur, carac)
     
 main()

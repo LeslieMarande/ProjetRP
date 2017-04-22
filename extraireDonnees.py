@@ -288,27 +288,34 @@ def descenteStochastique(fileName):
     affectation, carac, listeServeurs, dicoRangees, dicoObstacles = methodeGloutonne2(fileName)
     nouvelleAffectation = {}
     nouveauDicoObstacles = {}
-    nbAlea = random.random()
     cpt = 0
-    maxIteration = 400
+    maxIteration = 4000
+    
+    # dicoCaracServeur["id du serveur"] = [taille du serveur, capacite du serveur]
+    dicoCaracServeur = {}
+    for serveur in listeServeurs:
+        dicoCaracServeur[str(serveur[0])] = [serveur[1], serveur[2]]
 
-    print("Score avant descente: ",calculScore(affectation, carac, listeServeurs)[0] )
+    print("Score avant descente: ",calculScore(affectation, carac, dicoCaracServeur)[0] )
     
     while cpt < maxIteration:
+        nbAlea = random.random()
+        changement = False
         if nbAlea < 0.3:
-            nouvelleAffectation, nouveauDicoObstacles = voisinageEnleverUnServeur(affectation, listeServeurs, dicoObstacles)
+            nouvelleAffectation, nouveauDicoObstacles = voisinageEnleverUnServeur(affectation, dicoCaracServeur, dicoObstacles)
+            changement = True
         elif 0.3 <= nbAlea and nbAlea < 0.6:
-            nouvelleAffectation, nouveauDicoObstacles = voisinageServeurNonAffecte(affectation, listeServeurs, dicoObstacles, carac)
+            nouvelleAffectation, nouveauDicoObstacles = voisinageServeurNonAffecte(affectation, dicoCaracServeur, dicoObstacles, carac)
+            changement = True
         else:
             nouvelleAffectation = voisinageChangementPool(affectation, carac)
-            nouveauDicoObstacles = deepcopy(dicoObstacles)   
-        nbAlea = random.random()
         cpt+=1
        # print("Nouveau score",calculScore(nouvelleAffectation, carac, listeServeurs)[0] )
-        if calculScore(nouvelleAffectation, carac, listeServeurs)[0] >= calculScore(affectation, carac, listeServeurs)[0]:
+        if calculScore(nouvelleAffectation, carac, dicoCaracServeur)[0] >= calculScore(affectation, carac, dicoCaracServeur)[0]:
         #    print("BETTER")
             affectation = deepcopy(nouvelleAffectation)
-            dicoObstacles = deepcopy(nouveauDicoObstacles)
+            if changement:
+                dicoObstacles = deepcopy(nouveauDicoObstacles)
         
 ##        if cpt %4 == 0:
 ##            if calculScore(nouvelleAffectation, carac, listeServeurs)[0] >= calculScore(bestAffectation, carac, listeServeurs)[0]:
@@ -332,9 +339,9 @@ def descenteStochastique(fileName):
     return None 
 
 
-def voisinageEnleverUnServeur(affectation, listeServeurs, dicoObstacles):
+def voisinageEnleverUnServeur(affectation, dicoCaracServeur, dicoObstacles):
     """
-    Genere tous les voisins possibles a partir d'une affectation
+    Genere aleatoirement un voisin possible a partir d'une affectation
     en enlevant un serveur de cette affectation
     - entree : l'affectation courante, la liste des caracteristiques des serveurs 
                 (id, taille, capacite), les obstacles
@@ -354,10 +361,7 @@ def voisinageEnleverUnServeur(affectation, listeServeurs, dicoObstacles):
     
     rangee, slot, pool = affectation[serveurSelectionne]
     
-    for serveur in listeServeurs:
-        if serveurSelectionne == str(serveur[0]):
-            taille = serveur[1]
-            break
+    taille = dicoCaracServeur[serveurSelectionne][0]
         
     #print("serveur, taille")    
     #print(serveurSelectionne,taille)
@@ -383,7 +387,7 @@ def voisinageEnleverUnServeur(affectation, listeServeurs, dicoObstacles):
 
 def voisinageChangementPool(affectation, carac):
     """
-    Genere tous les voisins possibles a partir d'une affectation
+    Genere aleatoirement un voisin possible a partir d'une affectation
     en changeant le pool d'un serveur déjà affecte a un autre pool tire au sort
     - entree : l'affectation courante, les caracteristiques de l'instance
     - sortie : la nouvelle affectation possible
@@ -415,9 +419,9 @@ def voisinageChangementPool(affectation, carac):
     return nouvelleAffectation
 
 
-def voisinageServeurNonAffecte(affectation, listeServeurs, dicoObstacles, carac):
+def voisinageServeurNonAffecte(affectation, dicoCaracServeur, dicoObstacles, carac):
     """
-    Genere tous les voisins possibles a partir d'une affectation
+    Genere aleatoirement un voisin possible a partir d'une affectation
     en placant un serveur non encore affecte sur un emplacement libre
     tire au sort et un pool tire au sort
     - entree : l'affectation courante, la liste des caracteristiques des serveurs 
@@ -435,36 +439,45 @@ def voisinageServeurNonAffecte(affectation, listeServeurs, dicoObstacles, carac)
 ##    print("Serveurs non affectes")
 ##    print(listeServeursNonAffectes)
     
-    if len(listeServeursNonAffectes) == 0:
-        #print("Tous les serveurs sont affectes")
-        return affectation, dicoObstacles
+    '''
+    Dans la boucle suivante,
+    On tire un serveur au hasard parmi les serveurs non encore affectes,
+    (rq : s'il n'y a aucun serveur non affecte, on retourne la solution initiale)
+    on cherche toute les positions ou ce serveur peut etre affecte,
+    s'il n'y a aucune position, on retire ce serveur de la liste des serveurs non encore affectes et on reboucle
+    sinon on sort de la boucle
+    '''
+    pasDePositionsTrouvees = False
+    while pasDePositionsTrouvees:
+        if len(listeServeursNonAffectes) == 0:
+            #print("Tous les serveurs sont affectes ou aucune position possible trouvee pour les serveurs non encore affectes")
+            return affectation, dicoObstacles
+        
+        serveurSelectionne = random.choice(listeServeursNonAffectes)
+        taille = dicoCaracServeur[serveurSelectionne]
+#        print("serveur choisi")
+#        print(serveurSelectionne)
+        
+        # l_m, l'ensemble des slots (r,s) a partir duquel le serveur peut etre localises
+        l_m = []
+        for i in range(carac["R"]):
+            a = genererListe_l_m(dicoObstacles[str(i)], taille, carac["S"], i)
+            if not len(a) == 0: 
+                l_m += a
     
-    serveurSelectionne = random.choice(listeServeursNonAffectes)
-
-##    print("serveur choisi")
-##    print(serveurSelectionne)
+        #print("Slots Possibles")
+        #print(l_m)
+        
+        if len(l_m) == 0:
+            listeServeursNonAffectes.remove(serveurSelectionne)
+        else:
+            pasDePositionsTrouvees = False
     
-    for serveur in listeServeurs:
-        if serveurSelectionne == str(serveur[0]):
-            taille = serveur[1]
-            break
-            
-    # l_m, l'ensemble des slots (r,s) a partir duquel le serveur peut etre localises
-    l_m = []
-    for i in range(carac["R"]):
-        a = genererListe_l_m(dicoObstacles[str(i)], taille, carac["S"], i)
-        if not len(a) == 0: 
-            l_m += a
-
-    #print("Slots Possibles")
-    #print(l_m)
-
-    if len(l_m) == 0:
-        #print("aucun endroit dispo")
-        return affectation, dicoObstacles
+    nouvellePosition = random.choice(l_m)
     
-    nouvellePosition = random.choice(l_m)    
     nouveauPool = random.choice(range(carac["P"]))
+    while nouveauPool == affectation[serveurSelectionne][2]:
+        nouveauPool = random.choice(range(carac["P"]))
     
 ##    print("Slots choisi")
 ##    print(nouvellePosition)
@@ -535,13 +548,13 @@ def genererListe_l_m(listeObstacles,taille,tailleRangee, rangeeId):
 
 # Score d'une solution
 ###############################################################################
-def capaciteGarantie(affectation, numPool, carac, listeServeurs):
+def capaciteGarantie(affectation, numPool, carac, dicoCaracServeur):
     """
     Calcule la capacite garantie du pool i pour l'affectation A, i.e.
     la capacite totale des serveurs du pool en cas de panne d'une rangee
     - entrees : une affectation, un numero de pool,
-                les caracteristiques de l'instance et les caracteristiques des serveurs
-                (id, taille, capacite)
+                les caracteristiques de l'instance et les caracteristiques des serveurs, i.e.
+                dicoCaracServeur[id] = [taille, capacite]
     - sortie : la valeur de capacite et le numero de la rangee qui minimise cette valeur
     """
     
@@ -550,15 +563,12 @@ def capaciteGarantie(affectation, numPool, carac, listeServeurs):
     capaciteTotale = 0
     for serveurId, triplet in affectation.iteritems():
         if triplet != 'x':
-            if int(triplet[2]) == numPool:
-                for s in listeServeurs:
-                    if serveurId == str(s[0]):
-                        capacite = s[2]
-                        break
-                listeCapaciteParRangee[int(triplet[0])] += capacite
+            if triplet[2] == numPool:
+                capacite = dicoCaracServeur[serveurId][1]
+                listeCapaciteParRangee[triplet[0]] += capacite
                 capaciteTotale += capacite
     
-    # Initialisation
+    # Initialisation de la capacite garantie minimale
     gc_i = capaciteTotale - listeCapaciteParRangee[0]
     idRangee = 0
     
@@ -572,7 +582,7 @@ def capaciteGarantie(affectation, numPool, carac, listeServeurs):
     return gc_i, idRangee
 
 
-def calculScore(affectation, carac, listeServeurs):
+def calculScore(affectation, carac, dicoCaracServeur):
     """
     Calcul le score d'une affectation, i.e. le minimum de la capacite garantie
     pour l'ensemble des pools
@@ -581,10 +591,14 @@ def calculScore(affectation, carac, listeServeurs):
     - sorties : le score de l'affectation, la rangee et le pool qui ont minimisees
                 ce score
     """
-    score, idRangee = capaciteGarantie(affectation, 0, carac, listeServeurs)
+    
+    # Initialisation du score minimal
+    score, idRangee = capaciteGarantie(affectation, 0, carac, dicoCaracServeur)
     numPool = 0
+    
+    # rq : l'initialisation etant faite, on part de 1 et non de zero
     for p in range(1, carac["P"]):
-        tmpScore, tmpIdRangee = capaciteGarantie(affectation, p, carac, listeServeurs)
+        tmpScore, tmpIdRangee = capaciteGarantie(affectation, p, carac, dicoCaracServeur)
         if tmpScore < score:
             score, idRangee = tmpScore, tmpIdRangee
             numPool = p
