@@ -69,6 +69,9 @@ def contraintes(z_mrsi, dicoCaracServeur, k_rs):
 #4 Un serveur affecte apparait au plus une fois
 #5 Un serveur affecte appartient a exactement un pool
 
+###############################################################################
+###############################################################################
+###############################################################################
     '''
     contrainte 1 : Au plus un serveur occupe un slot (un marqueur max par slot + pas de chevauchement de serveurs)
     '''
@@ -83,7 +86,55 @@ def contraintes(z_mrsi, dicoCaracServeur, k_rs):
                             somme += b
             if not type(somme) == type(0):
                 model.addConstr(somme <= 1, "Contrainte 1 : un marqueur max par slot {0} {1}".format(r, s))
- 
+###############################################################################
+###############################################################################
+###############################################################################
+#    '''
+#    TEST
+#    contrainte 1 bis a)
+#    '''
+#    for (r, s), listeServeurs in k_rs.iteritems():
+#        somme = 0
+#        if not len(listeServeurs) == 0:
+#            for serveur in listeServeurs:
+#                for k, v in z_mrsi[str(serveur)][str(r)][str(s)].iteritems():
+#                    somme += v
+#            
+#            if not type(somme) == type(0):
+#                model.addConstr(somme <= 1, "Contrainte 1 : un serveur max par slot {0} {1}".format(r, s))
+#                
+#    '''
+#    contrainte 1 bis b)
+#    '''
+#    for (r, s), listeServeurs in k_rs.iteritems():
+#        if not len(listeServeurs) == 0:
+#            for serveur in listeServeurs:
+#                somme = 0
+#                cpt = 0
+#                for i in range(1, dicoCaracServeur[str(serveur)][0]):
+#                    if not len(k_rs[(r, s + i)]) == 0:
+#                        for autreServeur in k_rs[(r, s + i)]:
+#                            if autreServeur != serveur:
+#                                for k, v in z_mrsi[str(autreServeur)][str(r)][str(s+i)].iteritems():
+#                                    somme += v
+#                                    cpt += 1
+#                sommeDuServeur = 0
+#                for k, v in z_mrsi[str(serveur)][str(r)][str(s)].iteritems():
+#                    sommeDuServeur += v
+#                
+#                if type(somme) != type(0) and type(sommeDuServeur) != type(0):
+#                    y = model.addVar(vtype = g.GRB.BINARY, name="y_mrs {0} {1} {2}" .format(serveur, r, s))
+#                    model.update()
+#                    m = cpt + 1
+#                    model.addConstr(sommeDuServeur, g.GRB.EQUAL, 1 - y, "Contrainte 1 : SI le serveur {0} est affecte a la position {1} {2}...".format(serveur, r, s))
+#                    model.addConstr(somme <= m * y, "Contrainte 1 : SI le serveur {0} est affecte a la position {1} {2} ALORS il n'y a pas ces serveurs ".format(serveur, r, s))
+#                    
+##                    print "{0} = 1 - {1}".format(sommeDuServeur, y)
+##                    print "{0} <= {1} * {2}".format(somme, m, y)
+###############################################################################
+###############################################################################
+###############################################################################
+
     '''
     contrainte 2 : Un serveur apparait au plus une fois dans une affectation
     (avec un unique pool)
@@ -95,7 +146,6 @@ def contraintes(z_mrsi, dicoCaracServeur, k_rs):
                 for i in z_mrsi[str(m)][str(r)][str(s)]:
                     somme += z_mrsi[str(m)][str(r)][str(s)][str(i)]
         if not type(somme) == type(0):
-            print somme, "<= 1"
             model.addConstr(somme <= 1, "Contrainte 2 : le serveur {0} apparait au plus une fois dans l'affectation".format(m))
     
     
@@ -116,6 +166,7 @@ def linearisationFonctionObj(z_mrsi, carac, dicoCaracServeur):
                     sommeCapacitesParPoolParRangee[int(i)][int(r)] += z_mrsi[m][r][s][i] * dicoCaracServeur[m][1]
     
     score = model.addVar(vtype = g.GRB.INTEGER, name = "score")
+    model.update()
     for i in range(carac["P"]):
         sommeTotale = sum(sommeCapacitesParPoolParRangee[i][:])
         for r in range(carac["R"]):
@@ -136,14 +187,14 @@ def linearisationFonctionObj(z_mrsi, carac, dicoCaracServeur):
         print "PL non resolvable dans la limite de temps"
     print""
     
-    model.write("Programme lineaire.lp") # Ecriture du Programme Lineaire dans un fichier
+#    model.write("Programme lineaire.lp") # Ecriture du Programme Lineaire dans un fichier
     
-#    for m in z_mrsi.keys():
-#        for r in z_mrsi[m].keys():
-#            for s in z_mrsi[m][r].keys():
-#                for i in z_mrsi[m][r][s].keys():
-#                    if z_mrsi[m][r][s][i].x != 0:
-#                        print "z_mrsi_{0}_{1}_{2}_{3} = {4}".format(m, r, s, i, z_mrsi[m][r][s][i].x)
+    for m in z_mrsi.keys():
+        for r in z_mrsi[m].keys():
+            for s in z_mrsi[m][r].keys():
+                for i in z_mrsi[m][r][s].keys():
+                    if z_mrsi[m][r][s][i].x != 0:
+                        print "z_mrsi_{0}_{1}_{2}_{3} = {4}".format(m, r, s, i, z_mrsi[m][r][s][i].x)
                 
     return z_mrsi
 
@@ -198,10 +249,12 @@ def heuristiqueArrondi1(nomFichier, pourcentage):
           
     score, idRangee, numPool = extraireDonnees.calculScore(affectation, carac, dicoCaracServeur)
     print "Score obtenu avec l'heuristique arrondi :", score
+    
+    return z_mrsi, dicoCaracServeur, carac
 
 
-def heuristiqueArrondi2(nomFichier, pourcentage):
-    z_mrsi, dicoCaracServeur, carac = resolution_PL(nomFichier, pourcentage, "pl")
+def heuristiqueArrondi2(nomFichier, pourcentage, z_mrsi, dicoCaracServeur, carac):
+#    z_mrsi, dicoCaracServeur, carac = resolution_PL(nomFichier, pourcentage, "pl")
    
     masqueServeurLibre = {}
     listeTriee = []
@@ -245,10 +298,10 @@ def heuristiqueArrondi2(nomFichier, pourcentage):
                 affectation[elt[0]] = 'x'
         
     score, idRangee, numPool = extraireDonnees.calculScore(affectation, carac, dicoCaracServeur)
-    print "Score obtenu avec NOTRE heuristique arrondi :", score
+    print "Score obtenu avec NOTRE heuristique arrondi 2:", score
 
-def heuristiqueArrondi3(nomFichier, pourcentage):
-    z_mrsi, dicoCaracServeur, carac = resolution_PL(nomFichier, pourcentage, "pl")
+def heuristiqueArrondi3(nomFichier, pourcentage, z_mrsi, dicoCaracServeur, carac):
+#    z_mrsi, dicoCaracServeur, carac = resolution_PL(nomFichier, pourcentage, "pl")
    
     masqueServeurLibre = {}
     listeTriee = []
@@ -293,16 +346,16 @@ def heuristiqueArrondi3(nomFichier, pourcentage):
                 affectation[elt[0]] = 'x'
         
     score, idRangee, numPool = extraireDonnees.calculScore(affectation, carac, dicoCaracServeur)
-    print "Score obtenu avec NOTRE heuristique arrondi :", score
+    print "Score obtenu avec NOTRE heuristique arrondi 3:", score
     
     
 def main():
     nomFichier = "dc.in"
-    pourcentage = 50
+    pourcentage = 40
     
 #    resolution_PL(nomFichier, pourcentage, "plne")
-#    heuristiqueArrondi1(nomFichier, pourcentage)
-#    heuristiqueArrondi2(nomFichier, pourcentage)
-    heuristiqueArrondi3(nomFichier, pourcentage)
+    z_mrsi, dicoCaracServeur, carac = heuristiqueArrondi1(nomFichier, pourcentage)
+    heuristiqueArrondi2(nomFichier, pourcentage, z_mrsi, dicoCaracServeur, carac)
+    heuristiqueArrondi3(nomFichier, pourcentage, z_mrsi, dicoCaracServeur, carac)
     
 main()
