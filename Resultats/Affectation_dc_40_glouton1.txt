@@ -1,0 +1,250 @@
+5 97 1 	 	 Server 0 placed in row 5 at slot 97 and assigned to pool 1.
+3 4 10 	 	 Server 1 placed in row 3 at slot 4 and assigned to pool 10.
+1 37 8 	 	 Server 2 placed in row 1 at slot 37 and assigned to pool 8.
+x 	 	 	 Server 3 not allocated.
+x 	 	 	 Server 4 not allocated.
+1 80 0 	 	 Server 5 placed in row 1 at slot 80 and assigned to pool 0.
+x 	 	 	 Server 6 not allocated.
+1 59 13 	 	 Server 7 placed in row 1 at slot 59 and assigned to pool 13.
+0 48 15 	 	 Server 8 placed in row 0 at slot 48 and assigned to pool 15.
+x 	 	 	 Server 9 not allocated.
+2 41 8 	 	 Server 10 placed in row 2 at slot 41 and assigned to pool 8.
+x 	 	 	 Server 11 not allocated.
+x 	 	 	 Server 12 not allocated.
+4 64 0 	 	 Server 13 placed in row 4 at slot 64 and assigned to pool 0.
+0 11 7 	 	 Server 14 placed in row 0 at slot 11 and assigned to pool 7.
+x 	 	 	 Server 15 not allocated.
+3 17 13 	 	 Server 16 placed in row 3 at slot 17 and assigned to pool 13.
+3 84 14 	 	 Server 17 placed in row 3 at slot 84 and assigned to pool 14.
+2 89 2 	 	 Server 18 placed in row 2 at slot 89 and assigned to pool 2.
+5 99 2 	 	 Server 19 placed in row 5 at slot 99 and assigned to pool 2.
+3 32 17 	 	 Server 20 placed in row 3 at slot 32 and assigned to pool 17.
+x 	 	 	 Server 21 not allocated.
+x 	 	 	 Server 22 not allocated.
+0 16 8 	 	 Server 23 placed in row 0 at slot 16 and assigned to pool 8.
+3 89 15 	 	 Server 24 placed in row 3 at slot 89 and assigned to pool 15.
+3 36 0 	 	 Server 25 placed in row 3 at slot 36 and assigned to pool 0.
+5 67 9 	 	 Server 26 placed in row 5 at slot 67 and assigned to pool 9.
+x 	 	 	 Server 27 not allocated.
+1 84 1 	 	 Server 28 placed in row 1 at slot 84 and assigned to pool 1.
+x 	 	 	 Server 29 not allocated.
+x 	 	 	 Server 30 not allocated.
+3 9 11 	 	 Server 31 placed in row 3 at slot 9 and assigned to pool 11.
+x 	 	 	 Server 32 not allocated.
+5 30 16 	 	 Server 33 placed in row 5 at slot 30 and assigned to pool 16.
+2 71 15 	 	 Server 34 placed in row 2 at slot 71 and assigned to pool 15.
+3 53 5 	 	 Server 35 placed in row 3 at slot 53 and assigned to pool 5.
+x 	 	 	 Server 36 not allocated.
+x 	 	 	 Server 37 not allocated.
+x 	 	 	 Server 38 not allocated.
+x 	 	 	 Server 39 not allocated.
+5 34 17 	 	 Server 40 placed in row 5 at slot 34 and assigned to pool 17.
+0 57 17 	 	 Server 41 placed in row 0 at slot 57 and assigned to pool 17.
+x 	 	 	 Server 42 not allocated.
+5 39 0 	 	 Server 43 placed in row 5 at slot 39 and assigned to pool 0.
+3 65 8 	 	 Server 44 placed in row 3 at slot 65 and assigned to pool 8.
+4 67 1 	 	 Server 45 placed in row 4 at slot 67 and assigned to pool 1.
+1 88 2 	 	 Server 46 placed in row 1 at slot 88 and assigned to pool 2.
+x 	 	 	 Server 47 not allocated.
+5 9 9 	 	 Server 48 placed in row 5 at slot 9 and assigned to pool 9.
+3 58 6 	 	 Server 49 placed in row 3 at slot 58 and assigned to pool 6.
+0 36 12 	 	 Server 50 placed in row 0 at slot 36 and assigned to pool 12.
+x 	 	 	 Server 51 not allocated.
+4 70 2 	 	 Server 52 placed in row 4 at slot 70 and assigned to pool 2.
+x 	 	 	 Server 53 not allocated.
+5 12 10 	 	 Server 54 placed in row 5 at slot 12 and assigned to pool 10.
+x 	 	 	 Server 55 not allocated.
+2 49 10 	 	 Server 56 placed in row 2 at slot 49 and assigned to pool 10.
+2 0 17 	 	 Server 57 placed in row 2 at slot 0 and assigned to pool 17.
+0 41 13 	 	 Server 58 placed in row 0 at slot 41 and assigned to pool 13.
+0 0 5 	 	 Server 59 placed in row 0 at slot 0 and assigned to pool 5.
+0 62 0 	 	 Server 60 placed in row 0 at slot 62 and assigned to pool 0.
+x 	 	 	 Server 61 not allocated.
+x 	 	 	 Server 62 not allocated.
+x 	 	 	 Server 63 not allocated.
+3 95 16 	 	 Server 64 placed in row 3 at slot 95 and assigned to pool 16.
+3 67 9 	 	 Server 65 placed in row 3 at slot 67 and assigned to pool 9.
+1 24 5 	 	 Server 66 placed in row 1 at slot 24 and assigned to pool 5.
+2 5 0 	 	 Server 67 placed in row 2 at slot 5 and assigned to pool 0.
+x 	 	 	 Server 68 not allocated.
+3 47 3 	 	 Server 69 placed in row 3 at slot 47 and assigned to pool 3.
+4 24 9 	 	 Server 70 placed in row 4 at slot 24 and assigned to pool 9.
+x 	 	 	 Server 71 not allocated.
+4 37 12 	 	 Server 72 placed in row 4 at slot 37 and assigned to pool 12.
+4 87 8 	 	 Server 73 placed in row 4 at slot 87 and assigned to pool 8.
+5 72 10 	 	 Server 74 placed in row 5 at slot 72 and assigned to pool 10.
+x 	 	 	 Server 75 not allocated.
+5 45 2 	 	 Server 76 placed in row 5 at slot 45 and assigned to pool 2.
+3 71 10 	 	 Server 77 placed in row 3 at slot 71 and assigned to pool 10.
+x 	 	 	 Server 78 not allocated.
+4 19 8 	 	 Server 79 placed in row 4 at slot 19 and assigned to pool 8.
+4 41 13 	 	 Server 80 placed in row 4 at slot 41 and assigned to pool 13.
+4 45 14 	 	 Server 81 placed in row 4 at slot 45 and assigned to pool 14.
+5 49 3 	 	 Server 82 placed in row 5 at slot 49 and assigned to pool 3.
+5 77 11 	 	 Server 83 placed in row 5 at slot 77 and assigned to pool 11.
+x 	 	 	 Server 84 not allocated.
+x 	 	 	 Server 85 not allocated.
+1 45 10 	 	 Server 86 placed in row 1 at slot 45 and assigned to pool 10.
+5 84 14 	 	 Server 87 placed in row 5 at slot 84 and assigned to pool 14.
+x 	 	 	 Server 88 not allocated.
+0 21 9 	 	 Server 89 placed in row 0 at slot 21 and assigned to pool 9.
+3 42 2 	 	 Server 90 placed in row 3 at slot 42 and assigned to pool 2.
+4 99 11 	 	 Server 91 placed in row 4 at slot 99 and assigned to pool 11.
+2 93 3 	 	 Server 92 placed in row 2 at slot 93 and assigned to pool 3.
+1 32 7 	 	 Server 93 placed in row 1 at slot 32 and assigned to pool 7.
+5 2 6 	 	 Server 94 placed in row 5 at slot 2 and assigned to pool 6.
+5 79 12 	 	 Server 95 placed in row 5 at slot 79 and assigned to pool 12.
+4 92 9 	 	 Server 96 placed in row 4 at slot 92 and assigned to pool 9.
+x 	 	 	 Server 97 not allocated.
+x 	 	 	 Server 98 not allocated.
+1 96 4 	 	 Server 99 placed in row 1 at slot 96 and assigned to pool 4.
+5 81 13 	 	 Server 100 placed in row 5 at slot 81 and assigned to pool 13.
+x 	 	 	 Server 101 not allocated.
+0 67 1 	 	 Server 102 placed in row 0 at slot 67 and assigned to pool 1.
+x 	 	 	 Server 103 not allocated.
+x 	 	 	 Server 104 not allocated.
+2 54 11 	 	 Server 105 placed in row 2 at slot 54 and assigned to pool 11.
+5 53 4 	 	 Server 106 placed in row 5 at slot 53 and assigned to pool 4.
+5 15 11 	 	 Server 107 placed in row 5 at slot 15 and assigned to pool 11.
+x 	 	 	 Server 108 not allocated.
+0 26 10 	 	 Server 109 placed in row 0 at slot 26 and assigned to pool 10.
+2 97 4 	 	 Server 110 placed in row 2 at slot 97 and assigned to pool 4.
+x 	 	 	 Server 111 not allocated.
+x 	 	 	 Server 112 not allocated.
+0 79 4 	 	 Server 113 placed in row 0 at slot 79 and assigned to pool 4.
+0 31 11 	 	 Server 114 placed in row 0 at slot 31 and assigned to pool 11.
+x 	 	 	 Server 115 not allocated.
+x 	 	 	 Server 116 not allocated.
+3 19 14 	 	 Server 117 placed in row 3 at slot 19 and assigned to pool 14.
+x 	 	 	 Server 118 not allocated.
+0 74 3 	 	 Server 119 placed in row 0 at slot 74 and assigned to pool 3.
+0 84 5 	 	 Server 120 placed in row 0 at slot 84 and assigned to pool 5.
+x 	 	 	 Server 121 not allocated.
+4 50 15 	 	 Server 122 placed in row 4 at slot 50 and assigned to pool 15.
+0 89 6 	 	 Server 123 placed in row 0 at slot 89 and assigned to pool 6.
+0 94 7 	 	 Server 124 placed in row 0 at slot 94 and assigned to pool 7.
+4 97 10 	 	 Server 125 placed in row 4 at slot 97 and assigned to pool 10.
+5 43 1 	 	 Server 126 placed in row 5 at slot 43 and assigned to pool 1.
+4 54 16 	 	 Server 127 placed in row 4 at slot 54 and assigned to pool 16.
+2 62 13 	 	 Server 128 placed in row 2 at slot 62 and assigned to pool 13.
+5 0 5 	 	 Server 129 placed in row 5 at slot 0 and assigned to pool 5.
+x 	 	 	 Server 130 not allocated.
+x 	 	 	 Server 131 not allocated.
+0 5 6 	 	 Server 132 placed in row 0 at slot 5 and assigned to pool 6.
+5 89 15 	 	 Server 133 placed in row 5 at slot 89 and assigned to pool 15.
+3 50 4 	 	 Server 134 placed in row 3 at slot 50 and assigned to pool 4.
+2 45 9 	 	 Server 135 placed in row 2 at slot 45 and assigned to pool 9.
+0 72 2 	 	 Server 136 placed in row 0 at slot 72 and assigned to pool 2.
+0 99 8 	 	 Server 137 placed in row 0 at slot 99 and assigned to pool 8.
+x 	 	 	 Server 138 not allocated.
+3 61 7 	 	 Server 139 placed in row 3 at slot 61 and assigned to pool 7.
+x 	 	 	 Server 140 not allocated.
+5 18 12 	 	 Server 141 placed in row 5 at slot 18 and assigned to pool 12.
+x 	 	 	 Server 142 not allocated.
+x 	 	 	 Server 143 not allocated.
+2 10 1 	 	 Server 144 placed in row 2 at slot 10 and assigned to pool 1.
+2 25 4 	 	 Server 145 placed in row 2 at slot 25 and assigned to pool 4.
+4 59 17 	 	 Server 146 placed in row 4 at slot 59 and assigned to pool 17.
+x 	 	 	 Server 147 not allocated.
+x 	 	 	 Server 148 not allocated.
+1 10 2 	 	 Server 149 placed in row 1 at slot 10 and assigned to pool 2.
+x 	 	 	 Server 150 not allocated.
+5 21 13 	 	 Server 151 placed in row 5 at slot 21 and assigned to pool 13.
+x 	 	 	 Server 152 not allocated.
+2 58 12 	 	 Server 153 placed in row 2 at slot 58 and assigned to pool 12.
+1 28 6 	 	 Server 154 placed in row 1 at slot 28 and assigned to pool 6.
+4 72 3 	 	 Server 155 placed in row 4 at slot 72 and assigned to pool 3.
+x 	 	 	 Server 156 not allocated.
+x 	 	 	 Server 157 not allocated.
+4 0 3 	 	 Server 158 placed in row 4 at slot 0 and assigned to pool 3.
+4 76 4 	 	 Server 159 placed in row 4 at slot 76 and assigned to pool 4.
+x 	 	 	 Server 160 not allocated.
+1 0 0 	 	 Server 161 placed in row 1 at slot 0 and assigned to pool 0.
+x 	 	 	 Server 162 not allocated.
+4 3 4 	 	 Server 163 placed in row 4 at slot 3 and assigned to pool 4.
+4 79 5 	 	 Server 164 placed in row 4 at slot 79 and assigned to pool 5.
+2 67 14 	 	 Server 165 placed in row 2 at slot 67 and assigned to pool 14.
+x 	 	 	 Server 166 not allocated.
+x 	 	 	 Server 167 not allocated.
+3 14 12 	 	 Server 168 placed in row 3 at slot 14 and assigned to pool 12.
+x 	 	 	 Server 169 not allocated.
+5 55 5 	 	 Server 170 placed in row 5 at slot 55 and assigned to pool 5.
+3 73 11 	 	 Server 171 placed in row 3 at slot 73 and assigned to pool 11.
+5 93 17 	 	 Server 172 placed in row 5 at slot 93 and assigned to pool 17.
+x 	 	 	 Server 173 not allocated.
+x 	 	 	 Server 174 not allocated.
+x 	 	 	 Server 175 not allocated.
+2 15 2 	 	 Server 176 placed in row 2 at slot 15 and assigned to pool 2.
+x 	 	 	 Server 177 not allocated.
+2 74 16 	 	 Server 178 placed in row 2 at slot 74 and assigned to pool 16.
+1 40 9 	 	 Server 179 placed in row 1 at slot 40 and assigned to pool 9.
+1 70 16 	 	 Server 180 placed in row 1 at slot 70 and assigned to pool 16.
+0 52 16 	 	 Server 181 placed in row 0 at slot 52 and assigned to pool 16.
+2 29 5 	 	 Server 182 placed in row 2 at slot 29 and assigned to pool 5.
+3 29 16 	 	 Server 183 placed in row 3 at slot 29 and assigned to pool 16.
+2 86 1 	 	 Server 184 placed in row 2 at slot 86 and assigned to pool 1.
+3 77 12 	 	 Server 185 placed in row 3 at slot 77 and assigned to pool 12.
+x 	 	 	 Server 186 not allocated.
+1 92 3 	 	 Server 187 placed in row 1 at slot 92 and assigned to pool 3.
+4 6 5 	 	 Server 188 placed in row 4 at slot 6 and assigned to pool 5.
+x 	 	 	 Server 189 not allocated.
+x 	 	 	 Server 190 not allocated.
+x 	 	 	 Server 191 not allocated.
+x 	 	 	 Server 192 not allocated.
+2 33 6 	 	 Server 193 placed in row 2 at slot 33 and assigned to pool 6.
+x 	 	 	 Server 194 not allocated.
+5 24 14 	 	 Server 195 placed in row 5 at slot 24 and assigned to pool 14.
+x 	 	 	 Server 196 not allocated.
+1 75 17 	 	 Server 197 placed in row 1 at slot 75 and assigned to pool 17.
+1 55 12 	 	 Server 198 placed in row 1 at slot 55 and assigned to pool 12.
+4 29 10 	 	 Server 199 placed in row 4 at slot 29 and assigned to pool 10.
+x 	 	 	 Server 200 not allocated.
+1 62 14 	 	 Server 201 placed in row 1 at slot 62 and assigned to pool 14.
+3 24 15 	 	 Server 202 placed in row 3 at slot 24 and assigned to pool 15.
+3 38 1 	 	 Server 203 placed in row 3 at slot 38 and assigned to pool 1.
+5 59 6 	 	 Server 204 placed in row 5 at slot 59 and assigned to pool 6.
+x 	 	 	 Server 205 not allocated.
+x 	 	 	 Server 206 not allocated.
+4 33 11 	 	 Server 207 placed in row 4 at slot 33 and assigned to pool 11.
+x 	 	 	 Server 208 not allocated.
+x 	 	 	 Server 209 not allocated.
+x 	 	 	 Server 210 not allocated.
+x 	 	 	 Server 211 not allocated.
+x 	 	 	 Server 212 not allocated.
+x 	 	 	 Server 213 not allocated.
+x 	 	 	 Server 214 not allocated.
+5 5 7 	 	 Server 215 placed in row 5 at slot 5 and assigned to pool 7.
+5 7 8 	 	 Server 216 placed in row 5 at slot 7 and assigned to pool 8.
+4 9 6 	 	 Server 217 placed in row 4 at slot 9 and assigned to pool 6.
+x 	 	 	 Server 218 not allocated.
+2 79 17 	 	 Server 219 placed in row 2 at slot 79 and assigned to pool 17.
+5 95 0 	 	 Server 220 placed in row 5 at slot 95 and assigned to pool 0.
+2 82 0 	 	 Server 221 placed in row 2 at slot 82 and assigned to pool 0.
+0 43 14 	 	 Server 222 placed in row 0 at slot 43 and assigned to pool 14.
+x 	 	 	 Server 223 not allocated.
+x 	 	 	 Server 224 not allocated.
+3 0 9 	 	 Server 225 placed in row 3 at slot 0 and assigned to pool 9.
+5 63 7 	 	 Server 226 placed in row 5 at slot 63 and assigned to pool 7.
+x 	 	 	 Server 227 not allocated.
+2 37 7 	 	 Server 228 placed in row 2 at slot 37 and assigned to pool 7.
+5 91 16 	 	 Server 229 placed in row 5 at slot 91 and assigned to pool 16.
+x 	 	 	 Server 230 not allocated.
+x 	 	 	 Server 231 not allocated.
+1 15 3 	 	 Server 232 placed in row 1 at slot 15 and assigned to pool 3.
+5 65 8 	 	 Server 233 placed in row 5 at slot 65 and assigned to pool 8.
+x 	 	 	 Server 234 not allocated.
+x 	 	 	 Server 235 not allocated.
+1 66 15 	 	 Server 236 placed in row 1 at slot 66 and assigned to pool 15.
+x 	 	 	 Server 237 not allocated.
+1 5 1 	 	 Server 238 placed in row 1 at slot 5 and assigned to pool 1.
+x 	 	 	 Server 239 not allocated.
+x 	 	 	 Server 240 not allocated.
+4 81 6 	 	 Server 241 placed in row 4 at slot 81 and assigned to pool 6.
+x 	 	 	 Server 242 not allocated.
+1 49 11 	 	 Server 243 placed in row 1 at slot 49 and assigned to pool 11.
+1 19 4 	 	 Server 244 placed in row 1 at slot 19 and assigned to pool 4.
+3 81 13 	 	 Server 245 placed in row 3 at slot 81 and assigned to pool 13.
+4 14 7 	 	 Server 246 placed in row 4 at slot 14 and assigned to pool 7.
+2 20 3 	 	 Server 247 placed in row 2 at slot 20 and assigned to pool 3.
+5 27 15 	 	 Server 248 placed in row 5 at slot 27 and assigned to pool 15.
+4 83 7 	 	 Server 249 placed in row 4 at slot 83 and assigned to pool 7.
