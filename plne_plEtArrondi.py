@@ -7,7 +7,7 @@ import outils
 
 model = g.Model("RP-OptimizeDataCenter")
 model.setParam('OutputFlag', False) #Desactive  le mode verbeux
-model.setParam('TimeLimit', 30*60) #Limite de temps pour la resolution     
+model.setParam('TimeLimit', 60*60) #Limite de temps pour la resolution     
 
 def creerVariables(fileName, choix):
     """
@@ -346,11 +346,11 @@ def heuristiqueArrondi3(nomFichier, pourcentage, z_mrsi, dicoCaracServeur, carac
     
 def main():
     nomFichier = "dc.in"
-    pourcentage = 15
+    pourcentage = 20
     
-#    resolution_PL(nomFichier, pourcentage, "plne")
-    z_mrsi, dicoCaracServeur, carac = heuristiqueArrondi1(nomFichier, pourcentage)
-    heuristiqueArrondi2(nomFichier, pourcentage, z_mrsi, dicoCaracServeur, carac)
-    heuristiqueArrondi3(nomFichier, pourcentage, z_mrsi, dicoCaracServeur, carac)
+    resolution_PL(nomFichier, pourcentage, "plne")
+#    z_mrsi, dicoCaracServeur, carac = heuristiqueArrondi1(nomFichier, pourcentage)
+#    heuristiqueArrondi2(nomFichier, pourcentage, z_mrsi, dicoCaracServeur, carac)
+#    heuristiqueArrondi3(nomFichier, pourcentage, z_mrsi, dicoCaracServeur, carac)
     
 main()
