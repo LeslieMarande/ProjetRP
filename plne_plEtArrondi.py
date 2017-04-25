@@ -7,7 +7,7 @@ import outils
 
 model = g.Model("RP-OptimizeDataCenter")
 model.setParam('OutputFlag', False) #Desactive  le mode verbeux
-model.setParam('TimeLimit', 5*60) #Limite de temps pour la resolution     
+model.setParam('TimeLimit', 30*60) #Limite de temps pour la resolution     
 
 def creerVariables(fileName, choix):
     """
@@ -106,17 +106,19 @@ def contraintes(z_mrsi, dicoCaracServeur, k_rs):
     '''
     contrainte 1 bis b)
     '''
-    grosChiffre = max([k[1] for k in k_rs])
     for (r, s), listeServeurs in k_rs.iteritems():
         if not len(listeServeurs) == 0:
             for serveur in listeServeurs:
                 somme = 0
+                grosChiffre = 0
                 for i in range(1, dicoCaracServeur[str(serveur)][0]):
                     if not len(k_rs[(r, s + i)]) == 0:
                         for autreServeur in k_rs[(r, s + i)]:
                             if autreServeur != serveur:
                                 for k, v in z_mrsi[str(autreServeur)][str(r)][str(s+i)].iteritems():
                                     somme += v
+                                    grosChiffre += 1
+                grosChiffre += 1
                 sommeDuServeur = 0
                 for k, v in z_mrsi[str(serveur)][str(r)][str(s)].iteritems():
                     sommeDuServeur += v
@@ -124,8 +126,7 @@ def contraintes(z_mrsi, dicoCaracServeur, k_rs):
                 if type(somme) != type(0) and type(sommeDuServeur) != type(0):
                     model.addConstr(somme <= grosChiffre * (1 - sommeDuServeur), "Contrainte 1 : SI le serveur {0} est affecte a la position {1} {2} ALORS il n'y a pas d'autres serveurs affecte dans les position qu'il occupe ".format(serveur, r, s))
                     
-#                    print "{0} = 1 - {1}".format(sommeDuServeur, y)
-#                    print "{0} <= {1} * {2}".format(somme, m, y)
+#                    print "{0} <= {1} * (1 - {2})".format(somme, grosChiffre, sommeDuServeur)
 ###############################################################################
 ###############################################################################
 ###############################################################################
