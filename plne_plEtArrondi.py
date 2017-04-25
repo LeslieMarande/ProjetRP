@@ -72,69 +72,63 @@ def contraintes(z_mrsi, dicoCaracServeur, k_rs):
 ###############################################################################
 ###############################################################################
 ###############################################################################
-    '''
-    contrainte 1 : Au plus un serveur occupe un slot (un marqueur max par slot + pas de chevauchement de serveurs)
-    '''
-    for (r,s), listeServeurs in k_rs.iteritems():
-        somme = 0
-        if not len(listeServeurs) == 0:
-            tailleServeurMax = max([dicoCaracServeur[str(idServ)][0] for idServ in listeServeurs])
-            for serveur in listeServeurs:
-                for i in range(0,tailleServeurMax):
-                    if str(s+i) in z_mrsi[str(serveur)][str(r)]:
-                        for a,b in z_mrsi[str(serveur)][str(r)][str(s+i)].iteritems():
-                            somme += b
-            if not type(somme) == type(0):
-                model.addConstr(somme <= 1, "Contrainte 1 : un marqueur max par slot {0} {1}".format(r, s))
-###############################################################################
-###############################################################################
-###############################################################################
 #    '''
-#    TEST
-#    contrainte 1 bis a)
+#    contrainte 1 : Au plus un serveur occupe un slot (un marqueur max par slot + pas de chevauchement de serveurs)
 #    '''
-#    for (r, s), listeServeurs in k_rs.iteritems():
+#    for (r,s), listeServeurs in k_rs.iteritems():
 #        somme = 0
 #        if not len(listeServeurs) == 0:
+#            tailleServeurMax = max([dicoCaracServeur[str(idServ)][0] for idServ in listeServeurs])
 #            for serveur in listeServeurs:
-#                for k, v in z_mrsi[str(serveur)][str(r)][str(s)].iteritems():
-#                    somme += v
-#            
+#                for i in range(0,tailleServeurMax):
+#                    if str(s+i) in z_mrsi[str(serveur)][str(r)]:
+#                        for a,b in z_mrsi[str(serveur)][str(r)][str(s+i)].iteritems():
+#                            somme += b
 #            if not type(somme) == type(0):
-#                model.addConstr(somme <= 1, "Contrainte 1 : un serveur max par slot {0} {1}".format(r, s))
-#                
-#    '''
-#    contrainte 1 bis b)
-#    '''
-#    for (r, s), listeServeurs in k_rs.iteritems():
-#        if not len(listeServeurs) == 0:
-#            for serveur in listeServeurs:
-#                somme = 0
-#                cpt = 0
-#                for i in range(1, dicoCaracServeur[str(serveur)][0]):
-#                    if not len(k_rs[(r, s + i)]) == 0:
-#                        for autreServeur in k_rs[(r, s + i)]:
-#                            if autreServeur != serveur:
-#                                for k, v in z_mrsi[str(autreServeur)][str(r)][str(s+i)].iteritems():
-#                                    somme += v
-#                                    cpt += 1
-#                sommeDuServeur = 0
-#                for k, v in z_mrsi[str(serveur)][str(r)][str(s)].iteritems():
-#                    sommeDuServeur += v
-#                
-#                if type(somme) != type(0) and type(sommeDuServeur) != type(0):
-#                    y = model.addVar(vtype = g.GRB.BINARY, name="y_mrs {0} {1} {2}" .format(serveur, r, s))
-#                    model.update()
-#                    m = cpt + 1
-#                    model.addConstr(sommeDuServeur, g.GRB.EQUAL, 1 - y, "Contrainte 1 : SI le serveur {0} est affecte a la position {1} {2}...".format(serveur, r, s))
-#                    model.addConstr(somme <= m * y, "Contrainte 1 : SI le serveur {0} est affecte a la position {1} {2} ALORS il n'y a pas ces serveurs ".format(serveur, r, s))
-#                    
-##                    print "{0} = 1 - {1}".format(sommeDuServeur, y)
-##                    print "{0} <= {1} * {2}".format(somme, m, y)
+#                model.addConstr(somme <= 1, "Contrainte 1 : un marqueur max par slot {0} {1}".format(r, s))
 ###############################################################################
 ###############################################################################
 ###############################################################################
-
+    '''
+    TEST
+    contrainte 1 bis a)
+    '''
+    for (r, s), listeServeurs in k_rs.iteritems():
+        somme = 0
+        if not len(listeServeurs) == 0:
+            for serveur in listeServeurs:
+                for k, v in z_mrsi[str(serveur)][str(r)][str(s)].iteritems():
+                    somme += v
+            
+            if not type(somme) == type(0):
+                model.addConstr(somme <= 1, "Contrainte 1 : un serveur max par slot {0} {1}".format(r, s))
+                
+    '''
+    contrainte 1 bis b)
+    '''
+    grosChiffre = max([k[1] for k in k_rs])
+    for (r, s), listeServeurs in k_rs.iteritems():
+        if not len(listeServeurs) == 0:
+            for serveur in listeServeurs:
+                somme = 0
+                for i in range(1, dicoCaracServeur[str(serveur)][0]):
+                    if not len(k_rs[(r, s + i)]) == 0:
+                        for autreServeur in k_rs[(r, s + i)]:
+                            if autreServeur != serveur:
+                                for k, v in z_mrsi[str(autreServeur)][str(r)][str(s+i)].iteritems():
+                                    somme += v
+                sommeDuServeur = 0
+                for k, v in z_mrsi[str(serveur)][str(r)][str(s)].iteritems():
+                    sommeDuServeur += v
+                
+                if type(somme) != type(0) and type(sommeDuServeur) != type(0):
+                    model.addConstr(somme <= grosChiffre * (1 - sommeDuServeur), "Contrainte 1 : SI le serveur {0} est affecte a la position {1} {2} ALORS il n'y a pas d'autres serveurs affecte dans les position qu'il occupe ".format(serveur, r, s))
+                    
+#                    print "{0} = 1 - {1}".format(sommeDuServeur, y)
+#                    print "{0} <= {1} * {2}".format(somme, m, y)
+###############################################################################
+###############################################################################
+###############################################################################
     '''
     contrainte 2 : Un serveur apparait au plus une fois dans une affectation
     (avec un unique pool)
