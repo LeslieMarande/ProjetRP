@@ -12,7 +12,7 @@ def voisinageEnleverUnServeur(affectation, dicoCaracServeur, dicoObstacles):
                 (id, taille, capacite), les obstacles
     - sortie : la nouvelle affectation, le nouveau dico des obstacles
     """
-    #print("Choix : VoisinageEnleverUnServeur")
+#    print "Choix : voisinageEnleverUnServeur"
     listeServeursAffectes = []
     
     for serveurId in affectation:
@@ -32,24 +32,27 @@ def voisinageEnleverUnServeur(affectation, dicoCaracServeur, dicoObstacles):
     rangee, slot, pool = affectation[serveurSelectionne]
     
     taille = dicoCaracServeur[serveurSelectionne][0]
-        
-    #print("serveur, taille")    
-    #print(serveurSelectionne,taille)
+    
+#    print "dicoObstacles"
+#    print dicoObstacles
+#    print "serveurSelectionne", serveurSelectionne
+#    print "rangee, slot, pool, taille"
+#    print rangee, slot, pool, taille
     
     for i in range(taille):
-        nouveauDicoObstacles[str(affectation[serveurSelectionne][0])].remove(slot + i)
+        nouveauDicoObstacles[str(rangee)].remove(slot + i)
         
     nouvelleAffectation[serveurSelectionne] = 'x'
     
-##    print("Ancienne affectation")
-##    print(affectation)
-##    print("Nouvelle affectation")
-##    print(nouvelleAffectation)
-##
-##    print("Ancien dico")
-##    print(dicoObstacles)
-##    print("Nouveau dico")
-##    print(nouveauDicoObstacles)
+#    print("Ancienne affectation")
+#    print(affectation)
+#    print("Nouvelle affectation")
+#    print(nouvelleAffectation)
+#
+#    print("Ancien dico")
+#    print(dicoObstacles)
+#    print("Nouveau dico")
+#    print(nouveauDicoObstacles)
     
     return nouvelleAffectation, nouveauDicoObstacles
     
@@ -62,7 +65,7 @@ def voisinageChangementPool(affectation, carac):
     - entree : l'affectation courante, les caracteristiques de l'instance
     - sortie : la nouvelle affectation possible
     """
-    #print("Choix : voisinageChangementPool")
+#    print("Choix : voisinageChangementPool")
     listeServeursAffectes = []
     
     for serveurId in affectation:
@@ -75,8 +78,8 @@ def voisinageChangementPool(affectation, carac):
         return affectation
     
     serveurSelectionne = random.choice(listeServeursAffectes)
-    #print("serveur,pool")
-    #print(serveurSelectionne,affectation[serveurSelectionne][2])
+#    print("serveur,pool")
+#    print(serveurSelectionne,affectation[serveurSelectionne][2])
     
     numPoolAlea = random.randint(0, carac['P']-1)
     while numPoolAlea == affectation[serveurSelectionne][2]:
@@ -86,10 +89,10 @@ def voisinageChangementPool(affectation, carac):
     
     nouvelleAffectation[serveurSelectionne][2] = numPoolAlea
 
-##    print("Ancienne affectation")
-##    print(affectation)
-##    print("Nouvelle affectation")
-##    print(nouvelleAffectation)
+#    print("Ancienne affectation")
+#    print(affectation)
+#    print("Nouvelle affectation")
+#    print(nouvelleAffectation)
             
     return nouvelleAffectation
 
@@ -104,7 +107,7 @@ def voisinageServeurNonAffecte(affectation, dicoCaracServeur, dicoObstacles, car
                 de l'instance
     - sortie : la nouvelle affectation possible et le dico des obstacles possibles
     """
-    #print("Choix : voisinageServeurNonAffecte")  
+#    print("Choix : voisinageServeurNonAffecte")
     listeServeursNonAffectes = []
     
     for serveurId in affectation:
@@ -122,8 +125,8 @@ def voisinageServeurNonAffecte(affectation, dicoCaracServeur, dicoObstacles, car
     
     serveurSelectionne = random.choice(listeServeursNonAffectes)
 
-##    print("serveur choisi")
-##    print(serveurSelectionne)
+#    print("serveur choisi")
+#    print(serveurSelectionne)
     
     taille = dicoCaracServeur[serveurSelectionne]
             
@@ -184,8 +187,8 @@ def voisinageServeurNonAffecte(affectation, dicoCaracServeur, dicoObstacles, car
     while nouveauPool == affectation[serveurSelectionne][2]:
         nouveauPool = random.choice(range(carac["P"]))
     
-##    print("Slots choisi")
-##    print(nouvellePosition)
+#    print("Slots choisi")
+#    print(nouvellePosition)
     
     nouvelleAffectation = deepcopy(affectation)
     
@@ -198,15 +201,53 @@ def voisinageServeurNonAffecte(affectation, dicoCaracServeur, dicoObstacles, car
         
     nouveauDicoObstacles[str(nouvellePosition[0])].sort()
 
-##    print("Ancienne affectation")
-##    print(affectation)
-##    print("Nouvelle affectation")
-##    print(nouvelleAffectation)
-##
-##    print("Ancien dico")
-##    print(dicoObstacles)
-##    print("Nouveau dico")
-##    print(nouveauDicoObstacles)
+#    print("Ancienne affectation")
+#    print(affectation)
+#    print("Nouvelle affectation")
+#    print(nouvelleAffectation)
+#
+#    print("Ancien dico")
+#    print(dicoObstacles)
+#    print("Nouveau dico")
+#    print(nouveauDicoObstacles)
     
     
+    return nouvelleAffectation, nouveauDicoObstacles
+
+def uneAffectationVoisine(affectation, carac, listeServeurs, dicoObstacles, dicoCaracServeur, seuil1, seuil2):
+    
+    nouvelleAffectation = {}
+    nouveauDicoObstacles = {}
+    nbAlea = random.random()
+    
+    if nbAlea < seuil1: #0.2
+        nouvelleAffectation, nouveauDicoObstacles = voisinageEnleverUnServeur(affectation, dicoCaracServeur, dicoObstacles)
+    elif seuil1 <= nbAlea and nbAlea < seuil2: # 0.2 et 0.4
+        nouvelleAffectation, nouveauDicoObstacles = voisinageServeurNonAffecte(affectation, dicoCaracServeur, dicoObstacles, carac)
+    else:
+        nouvelleAffectation = voisinageChangementPool(affectation, carac)
+        nouveauDicoObstacles = deepcopy(dicoObstacles)
+                
+    return nouvelleAffectation, nouveauDicoObstacles
+
+def uneAffectationVoisine2(affectation, carac, listeServeurs, dicoObstacles, dicoCaracServeur):
+    nouvelleAffectation = {}
+    nouveauDicoObstacles = {}
+    nbAlea = random.random()
+
+    if nbAlea < 0.33:
+       # print"1"
+        nouvelleAffectation, nouveauDicoObstacles = voisinageEnleverUnServeur(affectation, dicoCaracServeur, dicoObstacles)
+        nouvelleAffectation, nouveauDicoObstacles = voisinageServeurNonAffecte(nouvelleAffectation, dicoCaracServeur, nouveauDicoObstacles, carac)
+        
+    elif 0.33 <= nbAlea and nbAlea < 0.66:
+       # print"2"
+        nouvelleAffectation, nouveauDicoObstacles = voisinageServeurNonAffecte(affectation, dicoCaracServeur, dicoObstacles, carac)
+        
+    else:
+        #print"3"
+        nouvelleAffectation = voisinageChangementPool(affectation, carac)
+        nouvelleAffectation = voisinageChangementPool(nouvelleAffectation, carac)
+        nouveauDicoObstacles = deepcopy(dicoObstacles)             
+            
     return nouvelleAffectation, nouveauDicoObstacles

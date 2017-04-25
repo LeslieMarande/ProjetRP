@@ -130,8 +130,6 @@ def methodeGloutonne2(nomFichier):
 ###############################################################################    
 def descenteStochastique(nomFichier):
     affectation, carac, listeServeurs, dicoRangees, dicoObstacles = methodeGloutonne2(nomFichier)
-    nouvelleAffectation = {}
-    nouveauDicoObstacles = {}
     cpt = 0
     maxIteration = 5000
     
@@ -141,47 +139,22 @@ def descenteStochastique(nomFichier):
         dicoCaracServeur[str(serveur[0])] = [serveur[1], serveur[2]]
         
     while cpt < maxIteration:
-        nbAlea = random.random()
-        changementDicoObstacles = False
-        if nbAlea < 0.3:
-            nouvelleAffectation, nouveauDicoObstacles = voisinage.voisinageEnleverUnServeur(affectation, dicoCaracServeur, dicoObstacles)
-            changementDicoObstacles = True
-        elif 0.3 <= nbAlea and nbAlea < 0.6:
-            nouvelleAffectation, nouveauDicoObstacles = voisinage.voisinageServeurNonAffecte(affectation, dicoCaracServeur, dicoObstacles, carac)
-            changementDicoObstacles = True
-        else:
-            nouvelleAffectation = voisinage.voisinageChangementPool(affectation, carac)
-        cpt+=1
-       # print("Nouveau score",calculScore(nouvelleAffectation, carac, dicoCaracServeur) )
+        nouvelleAffectation, nouveauDicoObstacles = voisinage.uneAffectationVoisine(affectation, carac, listeServeurs, dicoObstacles, dicoCaracServeur, 0.33, 0.66)
         if outils.calculScore(nouvelleAffectation, carac, dicoCaracServeur) > outils.calculScore(affectation, carac, dicoCaracServeur):
-        #    print("BETTER")
             affectation = deepcopy(nouvelleAffectation)
-            if changementDicoObstacles:
-                dicoObstacles = deepcopy(nouveauDicoObstacles)
-        
-##        if cpt %4 == 0:
-##            if calculScore(nouvelleAffectation, carac, dicoCaracServeur) >= outils.calculScore(bestAffectation, carac, dicoCaracServeur):
-##                affectation = nouvelleAffectation
-##                dicoObstacles = nouveauDicoObstacles
-##                bestAffectation = deepcopy(affectation)
-##                bestDicoObstacles= deepcopy(dicoObstacles)
-##            else:
-##                affectation =bestAffectation 
-##                dicoObstacles=bestDicoObstacles
-##        else:
-##                affectation = nouvelleAffectation
-##                dicoObstacles = nouveauDicoObstacles
+            dicoObstacles = deepcopy(nouveauDicoObstacles)
+        cpt += 1
 
     print "Score descente stochastique: ", outils.calculScore(affectation, carac, dicoCaracServeur)
 
 
 def recuitSimule(nomFichier):
     affectation, carac, listeServeurs, dicoRangees, dicoObstacles = methodeGloutonne2(nomFichier)
-    temperature = 400 #Il faut jouer ici
+    temperature = 5000 #Il faut jouer ici
     cpt = 0
-    nouveauDicoObstacles = dicoObstacles
-    RX = affectation
-    X = affectation
+#    nouveauDicoObstacles = dicoObstacles
+    RX = deepcopy(affectation)
+    X = deepcopy(affectation)
     
     # dicoCaracServeur["id du serveur"] = [taille du serveur, capacite du serveur]
     dicoCaracServeur = {}
@@ -190,12 +163,13 @@ def recuitSimule(nomFichier):
     
     while(temperature > 0 ):         
         
-        Y, nouveauDicoObstacles = unVoisinAffectation2(X,carac,listeServeurs,dicoObstacles)
+#        Y, nouveauDicoObstacles = voisinage.uneAffectationVoisine2(X,carac,listeServeurs,dicoObstacles, dicoCaracServeur)
+        Y, nouveauDicoObstacles = voisinage.uneAffectationVoisine(X, carac, listeServeurs, dicoObstacles, dicoCaracServeur, 0.33, 0.66)
         scoreY = outils.calculScore(Y,carac,dicoCaracServeur)
         scoreRX = outils.calculScore(RX,carac,dicoCaracServeur)
         scoreX = outils.calculScore(X,carac,dicoCaracServeur)
-       # print("ScoreY, ScoreX, ScoreRX")
-        #print( scoreY, scoreX, scoreRX)
+        print("ScoreY, ScoreX, ScoreRX")
+        print( scoreY, scoreX, scoreRX)
         
         if  scoreY > scoreRX :
             RX = deepcopy(Y)
@@ -216,69 +190,27 @@ def recuitSimule(nomFichier):
        
         temperature -= 1
             
-    print("Score apres descente: ",outils.calculScore(RX, carac, dicoCaracServeur) )
+    print("Score recuit simule: ",outils.calculScore(RX, carac, dicoCaracServeur) )
     
-
-def unVoisinAffectation(affectation, carac, listeServeurs, dicoObstacles):
-    
-    nouvelleAffectation = {}
-    nouveauDicoObstacles = {}
-    nbAlea = random.random()
-    changementDicoObstacles = False
-    
-    if nbAlea < 0.33: #0.2
-        nouvelleAffectation, nouveauDicoObstacles = voisinage.voisinageEnleverUnServeur(affectation, listeServeurs, dicoObstacles)
-        changementDicoObstacles = True
-    elif 0.33 <= nbAlea and nbAlea < 0.66: # 0.2 et 0.4
-        nouvelleAffectation, nouveauDicoObstacles = voisinage.voisinageServeurNonAffecte(affectation, listeServeurs, dicoObstacles, carac)
-        changementDicoObstacles = True
-    else:
-        nouvelleAffectation = voisinage.voisinageChangementPool(affectation, carac)
-        nouveauDicoObstacles = deepcopy(dicoObstacles)             
-            
-    return nouvelleAffectation, nouveauDicoObstacles
-
-
-def unVoisinAffectation2(affectation, carac, listeServeurs, dicoObstacles):
-    nouvelleAffectation = {}
-    nouveauDicoObstacles = {}
-    nbAlea = random.random()
-
-    if nbAlea < 0.33:
-       # print"1"
-        nouvelleAffectation, nouveauDicoObstacles = voisinage.voisinageEnleverUnServeur(affectation, listeServeurs, dicoObstacles)
-        nouvelleAffectation, nouveauDicoObstacles = voisinage.voisinageServeurNonAffecte(nouvelleAffectation, listeServeurs, nouveauDicoObstacles, carac)
-        
-    elif 0.33 <= nbAlea and nbAlea < 0.66:
-       # print"2"
-        nouvelleAffectation, nouveauDicoObstacles = voisinage.voisinageServeurNonAffecte(affectation, listeServeurs, dicoObstacles, carac)
-        
-    else:
-        #print"3"
-        nouvelleAffectation = voisinage.voisinageChangementPool(affectation, carac)
-        nouvelleAffectation = voisinage.voisinageChangementPool(nouvelleAffectation, carac)
-        nouveauDicoObstacles = deepcopy(dicoObstacles)             
-            
-    return nouvelleAffectation, nouveauDicoObstacles
-    
-
-
 
 ###############################################################################
 # MAIN
 ###############################################################################
 def main():
     nomFichier = "dc.in"
-    pourcentage = 15
+    pourcentage = 20
     
-#    recuitSimule(creeFichierInstancePourcentage(nomFichier,pourcentage))
+#    startTime = time.time()
+#    descenteStochastique(outils.creeFichierInstancePourcentage(nomFichier,pourcentage))
+#    print "duree d'execution methode descente stochastique sur {0}% : ".format(pourcentage), time.time() - startTime
+    
+    startTime = time.time()
+    recuitSimule(outils.creeFichierInstancePourcentage(nomFichier,pourcentage))
+    print "duree d'execution methode recuit simule sur {0}% : ".format(pourcentage), time.time() - startTime
+                                                       
 ##    for pourcentage in range(10,110,10):
 ##        print("pourcentage : ", pourcentage)
 ##        recuitSimule(creeFichierInstancePourcentage(nomFichier,pourcentage))
-
-    startTime = time.time()
-    descenteStochastique(outils.creeFichierInstancePourcentage(nomFichier,pourcentage))
-    print "duree d'execution methode descente stochastique sur {0}% : ".format(pourcentage), time.time() - startTime
         
 ###############################################################################
 # Tests
@@ -303,6 +235,7 @@ def testMethodesGloutonnes():
         print "Affectation methode gloutonne 2 : "
         outils.afficheAffectation(dicoRangees, carac)
         print "duree d'execution methode gloutonne 2 sur {0}%: ".format(pourcentage), time.time() - startTime
+
 
 def testDescenteStochastique():
     nomFichier = "dc.in"
