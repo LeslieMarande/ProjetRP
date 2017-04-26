@@ -230,6 +230,7 @@ def uneAffectationVoisine(affectation, carac, listeServeurs, dicoObstacles, dico
                 
     return nouvelleAffectation, nouveauDicoObstacles
 
+
 def uneAffectationVoisine2(affectation, carac, listeServeurs, dicoObstacles, dicoCaracServeur):
     nouvelleAffectation = {}
     nouveauDicoObstacles = {}

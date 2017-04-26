@@ -145,7 +145,10 @@ def descenteStochastique(nomFichier):
             dicoObstacles = deepcopy(nouveauDicoObstacles)
         cpt += 1
 
+    outils.genererFichierSolution(affectation, nomFichier, "descenteStochastique")
+    
     print "Score descente stochastique: ", outils.calculScore(affectation, carac, dicoCaracServeur)
+    
 
 
 def recuitSimule(nomFichier):
@@ -190,6 +193,8 @@ def recuitSimule(nomFichier):
        
         temperature -= 1
             
+    outils.genererFichierSolution(RX, nomFichier, "recuitSimule")
+    
     print("Score recuit simule: ",outils.calculScore(RX, carac, dicoCaracServeur) )
     
 

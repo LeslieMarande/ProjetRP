@@ -11,7 +11,7 @@ model.setParam('TimeLimit', 60*60) #Limite de temps pour la resolution
 
 def creerVariables(fileName, choix):
     """
-    Creer et retourne les dictionnaires z_mrsi, dicoCaracServeur et k_rs :
+    Creer et retourne les dictionnaires z_mrsi, dicoCaracServeur, k_rs et carac :
     - Les variables Gurobi du PLNE
         z_mrsi["id du serveur"]["num rangee"]["num slot"]["num pool"]
     
@@ -20,6 +20,9 @@ def creerVariables(fileName, choix):
     
     - Pour chaque emplacement (rangee, slot) l'ensemble des serveurs pouvant etre localises a cet emplacement
         k_rs[(idRangee,idSlot)]=[idServeur1, idserveur2,...]
+    
+    - Les caractéristiques de l'instance
+        {'R': nombre de rangees, 'S': nombre de slot par rangee, 'U': nombre de slot inutilisables, 'P': nombre de pools, 'M': nombre de serveurs}
     """
     z_mrsi = {}
     carac, dicoObstacles, listeServeurs, dicoRangees = outils.creeStructureDonnees(fileName)
@@ -58,7 +61,7 @@ def creerVariables(fileName, choix):
     
     model.update()
 
-    return z_mrsi, dicoCaracServeur, k_rs, carac, listeServeurs
+    return z_mrsi, dicoCaracServeur, k_rs, carac
 
 def contraintes(z_mrsi, dicoCaracServeur, k_rs):
 
@@ -77,7 +80,7 @@ def contraintes(z_mrsi, dicoCaracServeur, k_rs):
 #    '''
 #    for (r,s), listeServeurs in k_rs.iteritems():
 #        somme = 0
-#        if not len(listeServeurs) == 0:
+#        if len(listeServeurs) != 0:
 #            tailleServeurMax = max([dicoCaracServeur[str(idServ)][0] for idServ in listeServeurs])
 #            for serveur in listeServeurs:
 #                for i in range(0,tailleServeurMax):
@@ -90,8 +93,7 @@ def contraintes(z_mrsi, dicoCaracServeur, k_rs):
 ###############################################################################
 ###############################################################################
     '''
-    TEST
-    contrainte 1 bis a)
+    contrainte 1
     '''
     for (r, s), listeServeurs in k_rs.iteritems():
         somme = 0
@@ -104,7 +106,7 @@ def contraintes(z_mrsi, dicoCaracServeur, k_rs):
                 model.addConstr(somme <= 1, "Contrainte 1 : un serveur max par slot {0} {1}".format(r, s))
                 
     '''
-    contrainte 1 bis b)
+    contrainte 2
     '''
     for (r, s), listeServeurs in k_rs.iteritems():
         if not len(listeServeurs) == 0:
@@ -131,7 +133,7 @@ def contraintes(z_mrsi, dicoCaracServeur, k_rs):
 ###############################################################################
 ###############################################################################
     '''
-    contrainte 2 : Un serveur apparait au plus une fois dans une affectation
+    contrainte 3 : Un serveur apparait au plus une fois dans une affectation
     (avec un unique pool)
     '''    
     for m in z_mrsi:
@@ -146,7 +148,8 @@ def contraintes(z_mrsi, dicoCaracServeur, k_rs):
     
 def linearisationFonctionObj(z_mrsi, carac, dicoCaracServeur):
     '''
-    contrainte 3 : linearisation de la capacite garantie du pool i pour une affectation
+    contrainte 4 : linearisatin du score pour une affectation avec 
+    les linearisations des capacites garanties des pools i pour une affectation
     '''
     sommeCapacitesParPoolParRangee = []
     for i in range(carac["P"]):
@@ -188,7 +191,7 @@ def linearisationFonctionObj(z_mrsi, carac, dicoCaracServeur):
 #        for r in z_mrsi[m].keys():
 #            for s in z_mrsi[m][r].keys():
 #                for i in z_mrsi[m][r][s].keys():
-#                    if z_mrsi[m][r][s][i].x != 0:
+#                    if z_mrsi[m][r][s][i].x == 0:
 #                        print "z_mrsi_{0}_{1}_{2}_{3} = {4}".format(m, r, s, i, z_mrsi[m][r][s][i].x)
                 
     return z_mrsi
@@ -198,13 +201,13 @@ def resolution_PL(nomFichier, pourcentage, choix):
     Fonction a appeler pour lancer la resolution par PL ou PLNE avec Gurobi
     """
     nomFichierInstance = outils.creeFichierInstancePourcentage(nomFichier, pourcentage)
-    z_mrsi, dicoCaracServeur, k_rs, carac, listeServeurs = creerVariables(nomFichierInstance, choix)
+    z_mrsi, dicoCaracServeur, k_rs, carac= creerVariables(nomFichierInstance, choix)
     contraintes(z_mrsi, dicoCaracServeur, k_rs)
     z_mrsi = linearisationFonctionObj(z_mrsi, carac, dicoCaracServeur)
 #    print z_mrsi 
     return z_mrsi, dicoCaracServeur, carac
                     
-def heuristiqueArrondi1(nomFichier, pourcentage):
+def heuristiqueArrondi(nomFichier, pourcentage):
     z_mrsi, dicoCaracServeur, carac = resolution_PL(nomFichier, pourcentage, "pl")
     
     # cle : id du serveur, valeur : True / False pour savoir par la suite si le serveur est deja affecte ou non
@@ -248,7 +251,7 @@ def heuristiqueArrondi1(nomFichier, pourcentage):
     return z_mrsi, dicoCaracServeur, carac
 
 
-def heuristiqueArrondi2(nomFichier, pourcentage, z_mrsi, dicoCaracServeur, carac):
+def heuristiqueArrondiPerso1(nomFichier, pourcentage, z_mrsi, dicoCaracServeur, carac):
 #    z_mrsi, dicoCaracServeur, carac = resolution_PL(nomFichier, pourcentage, "pl")
    
     masqueServeurLibre = {}
@@ -293,9 +296,9 @@ def heuristiqueArrondi2(nomFichier, pourcentage, z_mrsi, dicoCaracServeur, carac
                 affectation[elt[0]] = 'x'
         
     score = outils.calculScore(affectation, carac, dicoCaracServeur)
-    print "Score obtenu avec NOTRE heuristique arrondi 2:", score
+    print "Score obtenu avec notre heuristique perso 1 :", score
 
-def heuristiqueArrondi3(nomFichier, pourcentage, z_mrsi, dicoCaracServeur, carac):
+def heuristiqueArrondiPerso2(nomFichier, pourcentage, z_mrsi, dicoCaracServeur, carac):
 #    z_mrsi, dicoCaracServeur, carac = resolution_PL(nomFichier, pourcentage, "pl")
    
     masqueServeurLibre = {}
@@ -341,16 +344,27 @@ def heuristiqueArrondi3(nomFichier, pourcentage, z_mrsi, dicoCaracServeur, carac
                 affectation[elt[0]] = 'x'
         
     score = outils.calculScore(affectation, carac, dicoCaracServeur)
-    print "Score obtenu avec NOTRE heuristique arrondi 3:", score
+    print "Score obtenu avec notre heuristique perso 2 :", score
     
+def testHeuristiquesArrondi(nomFichier, pourcentage):
+    """
+    calcul le PL sur un pourcentage de l'instance contenue dans nomFichier,
+    puis a partir des resultats du PL calcul le score avec 3 methodes d'arrondi
+    - Entree :
+        nomFichier, le nom de l'instance
+        pourcentage, le pourcentage de l'instance que l'on souhaite conserver
+    - Sortie :
+        aucune, affiche les scores obtenus par les methodes d'arrondi
+    """
+    z_mrsi, dicoCaracServeur, carac = heuristiqueArrondi(nomFichier, pourcentage)
+    heuristiqueArrondiPerso1(nomFichier, pourcentage, z_mrsi, dicoCaracServeur, carac)
+    heuristiqueArrondiPerso2(nomFichier, pourcentage, z_mrsi, dicoCaracServeur, carac)
     
 def main():
     nomFichier = "dc.in"
-    pourcentage = 20
+    pourcentage = 30
     
     resolution_PL(nomFichier, pourcentage, "plne")
-#    z_mrsi, dicoCaracServeur, carac = heuristiqueArrondi1(nomFichier, pourcentage)
-#    heuristiqueArrondi2(nomFichier, pourcentage, z_mrsi, dicoCaracServeur, carac)
-#    heuristiqueArrondi3(nomFichier, pourcentage, z_mrsi, dicoCaracServeur, carac)
+#    testHeuristiquesArrondi(nomFichier, pourcentage)
     
 main()

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from copy import deepcopy
+import os
 
 
 # Instances : Q 0.2.
@@ -17,6 +18,9 @@ def creeFichierInstancePourcentage(nomFichier, pourcentage):
         Le nom du nouveau fichier cree au format txt
     
     """
+    if not os.path.isdir("./Instances"):
+        os.mkdir("./Instances")
+        
     n = 0
     cpt = 0
     with open(nomFichier, "r") as s:
@@ -71,6 +75,9 @@ def genererFichierSolution(A, nomInstance, nomMethode):
     - Sortie : aucune, la fonction creee le fichier Affectation_[nomInstance].txt en interne
     """
     
+    if not os.path.isdir("./Resultats"):
+        os.mkdir("./Resultats")
+        
     # Ecriture dans le fichier
     f = open("Resultats/Affectation_{0}_{1}.txt".format(nomInstance.split("Instances/")[1].split(".txt")[0], nomMethode), "w")
     cpt = 0
@@ -222,6 +229,8 @@ def donnerPoolAuxServeurs(listeServeurs,carac):
 
     return listeServeurs
 
+
+###############################################################################
 def genererListe_l_m(listeObstacles,taille,tailleRangee, rangeeId):
     """
     retourne la liste de slots ou le serveur peut se positionner sur une rangee specifique
@@ -260,6 +269,7 @@ def genererListe_l_m(listeObstacles,taille,tailleRangee, rangeeId):
             
         curseurServeur = listeObstacles[curseurObst] + 1 
     return liste_l_m
+
 
 # Score d'une solution
 ###############################################################################
@@ -316,6 +326,8 @@ def calculScore(affectation, carac, dicoCaracServeur):
     return score
 
 
+# Affichage
+###############################################################################
 def afficheAffectation(dicoRangees, carac):
     for r in range(carac['R']):
         print "rangee {} : ".format(r)
