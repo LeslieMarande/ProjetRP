@@ -163,9 +163,8 @@ def recuitSimule(nomFichier):
     dicoCaracServeur = {}
     for serveur in listeServeurs:
         dicoCaracServeur[str(serveur[0])] = [serveur[1], serveur[2]]
-    bla = 0
-    while(temperature > math.pow(10,-3) ):         
-    #while(bla<8):   
+   
+    while(temperature > math.pow(10,-3) ):  
   #      Y, nouveauDicoObstacles = voisinage.uneAffectationVoisine2(X,carac,listeServeurs,dicoObstacles, dicoCaracServeur)
         Y, nouveauDicoObstacles = voisinage.uneAffectationVoisine(X, carac, listeServeurs, dicoObstacles, dicoCaracServeur, 0.30, 0.60)
         scoreY = outils.calculScore(Y,carac,dicoCaracServeur)
@@ -204,23 +203,20 @@ def recuitSimule(nomFichier):
 # MAIN
 ###############################################################################
 def main():
-    nomFichier = "dc.in"
-    
-    
+#    nomFichier = "dc.in"
+#    pourcentage = 20
 #    startTime = time.time()
 #    descenteStochastique(outils.creeFichierInstancePourcentage(nomFichier,pourcentage))
 #    print "duree d'execution methode descente stochastique sur {0}% : ".format(pourcentage), time.time() - startTime
-    for pourcentage in range(20,110,10):
-        print "---------------"
-        print "pourcentage", pourcentage
-        print "---------------"
-        startTime = time.time()
-        recuitSimule(outils.creeFichierInstancePourcentage(nomFichier,pourcentage))
-        print "duree d'execution methode recuit simule sur {0}% : ".format(pourcentage), time.time() - startTime
-                                                       
-##    for pourcentage in range(10,110,10):
-##        print("pourcentage : ", pourcentage)
-##        recuitSimule(creeFichierInstancePourcentage(nomFichier,pourcentage))
+
+
+#    for pourcentage in range(20,110,10):
+#        print "---------------"
+#        print "pourcentage", pourcentage
+#        print "---------------"
+#        startTime = time.time()
+#        recuitSimule(outils.creeFichierInstancePourcentage(nomFichier,pourcentage))
+#        print "duree d'execution methode recuit simule sur {0}% : ".format(pourcentage), time.time() - startTime
         
 ###############################################################################
 # Tests

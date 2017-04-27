@@ -362,9 +362,9 @@ def testHeuristiquesArrondi(nomFichier, pourcentage):
     
 def main():
     nomFichier = "dc.in"
-    pourcentage = 30
+    pourcentage = 15
     
-    resolution_PL(nomFichier, pourcentage, "plne")
-#    testHeuristiquesArrondi(nomFichier, pourcentage)
+#    resolution_PL(nomFichier, pourcentage, "plne")
+    testHeuristiquesArrondi(nomFichier, pourcentage)
     
 main()
