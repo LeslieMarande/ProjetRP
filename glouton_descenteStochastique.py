@@ -139,7 +139,7 @@ def descenteStochastique(nomFichier):
         dicoCaracServeur[str(serveur[0])] = [serveur[1], serveur[2]]
         
     while cpt < maxIteration:
-        nouvelleAffectation, nouveauDicoObstacles = voisinage.uneAffectationVoisine(affectation, carac, listeServeurs, dicoObstacles, dicoCaracServeur, 0.33, 0.66)
+        nouvelleAffectation, nouveauDicoObstacles = voisinage.uneAffectationVoisine(affectation, carac, listeServeurs, dicoObstacles, dicoCaracServeur, 0.30, 0.66)
         if outils.calculScore(nouvelleAffectation, carac, dicoCaracServeur) > outils.calculScore(affectation, carac, dicoCaracServeur):
             affectation = deepcopy(nouvelleAffectation)
             dicoObstacles = deepcopy(nouveauDicoObstacles)
@@ -153,26 +153,26 @@ def descenteStochastique(nomFichier):
 
 def recuitSimule(nomFichier):
     affectation, carac, listeServeurs, dicoRangees, dicoObstacles = methodeGloutonne2(nomFichier)
-    temperature = 5000 #Il faut jouer ici
+    temperature = 5 #Il faut jouer ici
     cpt = 0
 #    nouveauDicoObstacles = dicoObstacles
     RX = deepcopy(affectation)
     X = deepcopy(affectation)
-    
+    tmp= 0.99
     # dicoCaracServeur["id du serveur"] = [taille du serveur, capacite du serveur]
     dicoCaracServeur = {}
     for serveur in listeServeurs:
         dicoCaracServeur[str(serveur[0])] = [serveur[1], serveur[2]]
-    
-    while(temperature > 0 ):         
-        
-#        Y, nouveauDicoObstacles = voisinage.uneAffectationVoisine2(X,carac,listeServeurs,dicoObstacles, dicoCaracServeur)
-        Y, nouveauDicoObstacles = voisinage.uneAffectationVoisine(X, carac, listeServeurs, dicoObstacles, dicoCaracServeur, 0.33, 0.66)
+    bla = 0
+    while(temperature > math.pow(10,-3) ):         
+    #while(bla<8):   
+  #      Y, nouveauDicoObstacles = voisinage.uneAffectationVoisine2(X,carac,listeServeurs,dicoObstacles, dicoCaracServeur)
+        Y, nouveauDicoObstacles = voisinage.uneAffectationVoisine(X, carac, listeServeurs, dicoObstacles, dicoCaracServeur, 0.30, 0.60)
         scoreY = outils.calculScore(Y,carac,dicoCaracServeur)
         scoreRX = outils.calculScore(RX,carac,dicoCaracServeur)
         scoreX = outils.calculScore(X,carac,dicoCaracServeur)
-        print("ScoreY, ScoreX, ScoreRX")
-        print( scoreY, scoreX, scoreRX)
+        #print("ScoreY, ScoreX, ScoreRX")
+        #print( scoreY, scoreX, scoreRX)
         
         if  scoreY > scoreRX :
             RX = deepcopy(Y)
@@ -182,17 +182,19 @@ def recuitSimule(nomFichier):
             dicoObstacles = deepcopy(nouveauDicoObstacles)
         else: 
             RND = random.random() #Il faut jouer ici
+           # print("ScoreY, ScoreX")
+            #print( scoreY, scoreX)
             if( RND <= math.exp( (scoreY - scoreX) / temperature) ):
+                #print("pris")
                # print("Hasard",RND,math.exp( (scoreY - scoreX) / temperature) )
                 X = deepcopy(Y)
                 dicoObstacles = deepcopy(nouveauDicoObstacles)
         
-        #if cpt%10 == 0:
-        #    temperature -= 1
-        #cpt+=1
-       
-        temperature -= 1
-            
+        if cpt%100 == 0:
+            temperature = temperature * tmp 
+        cpt+=1
+        #bla +=1
+    #print("nombre de tours",bla)        
     outils.genererFichierSolution(RX, nomFichier, "recuitSimule")
     
     print("Score recuit simule: ",outils.calculScore(RX, carac, dicoCaracServeur) )
@@ -203,15 +205,18 @@ def recuitSimule(nomFichier):
 ###############################################################################
 def main():
     nomFichier = "dc.in"
-    pourcentage = 20
+    
     
 #    startTime = time.time()
 #    descenteStochastique(outils.creeFichierInstancePourcentage(nomFichier,pourcentage))
 #    print "duree d'execution methode descente stochastique sur {0}% : ".format(pourcentage), time.time() - startTime
-    
-    startTime = time.time()
-    recuitSimule(outils.creeFichierInstancePourcentage(nomFichier,pourcentage))
-    print "duree d'execution methode recuit simule sur {0}% : ".format(pourcentage), time.time() - startTime
+    for pourcentage in range(20,110,10):
+        print "---------------"
+        print "pourcentage", pourcentage
+        print "---------------"
+        startTime = time.time()
+        recuitSimule(outils.creeFichierInstancePourcentage(nomFichier,pourcentage))
+        print "duree d'execution methode recuit simule sur {0}% : ".format(pourcentage), time.time() - startTime
                                                        
 ##    for pourcentage in range(10,110,10):
 ##        print("pourcentage : ", pourcentage)
