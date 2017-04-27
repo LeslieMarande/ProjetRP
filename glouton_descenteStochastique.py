@@ -203,6 +203,7 @@ def recuitSimule(nomFichier):
 # MAIN
 ###############################################################################
 def main():
+    print
 #    nomFichier = "dc.in"
 #    pourcentage = 20
 #    startTime = time.time()
